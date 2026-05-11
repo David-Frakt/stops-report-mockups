@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stops Report Mockups</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f7f8fa; color: #333; }
+        .container { max-width: 700px; margin: 80px auto; padding: 0 20px; }
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+        .card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 20px 24px; margin-bottom: 16px;
+            text-decoration: none; color: inherit; display: block;
+            transition: box-shadow 0.15s, border-color 0.15s;
+        }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #4a7dff; }
+        .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .card p { font-size: 13px; color: #666; }
+        .badge {
+            display: inline-block; font-size: 11px; font-weight: 600;
+            padding: 2px 8px; border-radius: 4px; margin-bottom: 8px;
+        }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stops Report Mockups</h1>
+        <p class="subtitle">Weborder stops report - proposed enhancements for stakeholder review</p>
+
+        <a class="card" href="3-split-pricelines-with-totals.html">
+            <span class="badge badge-blue">Mockup 3</span>
+            <h2>Split Pricelines + Totals in Group Headers</h2>
+            <p>Separate columns per priceline (Name/Qty/Unit), totals displayed as pills in order group header rows. Pickup and delivery as separate rows grouped by order.</p>
+        </a>
+
+        <a class="card" href="4-merged-rows.html">
+            <span class="badge badge-purple">Mockup 4</span>
+            <h2>Merged Rows (One Row per Order)</h2>
+            <p>Pickup and delivery merged into a single row per order. Dedicated sections for P/D with color-coded headers. Includes "Merge stops" toggle and column selector.</p>
+        </a>
+    </div>
+</body>
+</html>

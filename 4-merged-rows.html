@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stops Report - Merged Rows (One per Order)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #333; font-size: 13px; }
+        .report-container { padding: 20px 30px; max-width: 100%; overflow-x: auto; }
+        h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .report-info { color: #888; font-size: 13px; margin-bottom: 16px; }
+        .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-bottom: 12px; }
+        .pagination .btn { width: 32px; height: 32px; border: 1px solid #dee2e6; background: #fff; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #495057; }
+        .pagination .btn.active { background: #4a7dff; color: #fff; border-color: #4a7dff; }
+        .close-btn { position: absolute; top: 16px; right: 24px; font-size: 22px; cursor: pointer; color: #999; background: none; border: none; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        thead th {
+            background: #e8ecf4;
+            color: #495057;
+            font-weight: 600;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+        thead th.priceline-header {
+            background: #dde6f5;
+            border-left: 1px solid #dee2e6;
+        }
+        .section-header-pickup {
+            text-align: center;
+            background: #d4edda;
+            color: #2d6a4f;
+            font-size: 11px;
+            border-left: 2px solid #dee2e6;
+            border-right: 2px solid #dee2e6;
+        }
+        .section-header-delivery {
+            text-align: center;
+            background: #d0e0f0;
+            color: #1a4d80;
+            font-size: 11px;
+            border-left: 2px solid #dee2e6;
+            border-right: 2px solid #dee2e6;
+        }
+        .priceline-group-header {
+            text-align: center;
+            border-left: 2px solid #dee2e6;
+            border-right: 2px solid #dee2e6;
+            background: #d0daf0;
+            font-size: 11px;
+        }
+        tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+            color: #333;
+        }
+        tbody td.priceline-cell {
+            border-left: 1px solid #e8ecf4;
+            border-right: 1px solid #e8ecf4;
+        }
+        tbody td.priceline-group-start {
+            border-left: 1px solid #f0f0f0;
+        }
+        tbody td.pickup-cell {
+            border-left: 1px solid #e8ecf4;
+        }
+        tbody td.pickup-start {
+            border-left: 2px solid #dee2e6;
+        }
+        tbody td.pickup-end {
+            border-right: 2px solid #dee2e6;
+        }
+        tbody td.delivery-cell {
+            border-left: 1px solid #e8ecf4;
+        }
+        tbody td.delivery-start {
+            border-left: 2px solid #dee2e6;
+        }
+        tbody td.delivery-end {
+            border-right: 2px solid #dee2e6;
+        }
+        tbody td.priceline-section-start {
+            border-left: 2px solid #dee2e6;
+        }
+        tbody td.priceline-section-end {
+            border-right: 2px solid #dee2e6;
+        }
+        tbody tr:hover { background: #f8f9ff; }
+        table {
+            border-left: 2px solid #dee2e6;
+            border-right: 2px solid #dee2e6;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .type-badge {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 11px;
+            color: #fff;
+        }
+        .type-P { background: #48bb78; }
+        .type-D { background: #4a90d9; }
+        td.number { text-align: right; border-right: 1px solid #e8ecf4; }
+        .mockup-badge {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: #9f7aea; color: #fff; text-align: center;
+            padding: 6px; font-size: 12px; font-weight: 600; z-index: 100;
+        }
+        .col-filter-bar {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        }
+        .col-filter-bar .dropdown {
+            position: relative; display: inline-block;
+        }
+        .col-filter-bar .dropdown-btn {
+            background: #fff; border: 1px solid #4a7dff; color: #4a7dff;
+            padding: 6px 14px; border-radius: 4px; font-size: 12px;
+            cursor: pointer; font-weight: 500;
+        }
+        .col-filter-bar .dropdown-btn:hover { background: #f0f4ff; }
+        .col-filter-bar .dropdown-menu {
+            display: none; position: absolute; top: 100%; left: 0;
+            background: #fff; border: 1px solid #dee2e6; border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px 0;
+            z-index: 50; min-width: 220px; max-height: 350px; overflow-y: auto;
+        }
+        .col-filter-bar .dropdown.open .dropdown-menu { display: block; }
+        .col-filter-bar .dropdown-menu .section-label {
+            padding: 6px 14px 2px; font-size: 10px; text-transform: uppercase;
+            color: #999; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .col-filter-bar .dropdown-menu .divider {
+            border-top: 1px solid #eee; margin: 4px 0;
+        }
+        .col-filter-bar .dropdown-menu label {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 14px; cursor: pointer; font-size: 12px;
+        }
+        .col-filter-bar .dropdown-menu label:hover { background: #f5f7ff; }
+        .col-filter-bar .dropdown-menu input[type="checkbox"] { accent-color: #4a7dff; }
+
+        .toggle-wrapper {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toggle-wrapper label {
+            font-size: 12px; font-weight: 500; color: #495057; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .toggle-switch {
+            position: relative; width: 36px; height: 20px; display: inline-block;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #cbd5e0; border-radius: 10px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-slider::before {
+            content: ''; position: absolute; width: 16px; height: 16px;
+            left: 2px; bottom: 2px; background: #fff; border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: #4a7dff;
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(16px);
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-badge">MOCKUP 4/4 - Merged Rows (One Row per Order)</div>
+    <div class="report-container" style="margin-top: 32px;">
+        <button class="close-btn">&times;</button>
+        <h2>Report</h2>
+        <div class="report-info">Showing 1 to 4 of 4 entries</div>
+
+        <div class="col-filter-bar">
+            <div class="dropdown" id="colFilterDropdown">
+                <button class="dropdown-btn" onclick="this.parentElement.classList.toggle('open')">
+                    Select Columns &#9662;
+                </button>
+                <div class="dropdown-menu">
+                    <label><input type="checkbox" checked> Select All</label>
+                    <div class="divider"></div>
+                    <div class="section-label">Order</div>
+                    <label><input type="checkbox" checked> OrderId</label>
+                    <label><input type="checkbox" checked> InvoiceId</label>
+                    <label><input type="checkbox" checked> Reference</label>
+                    <label><input type="checkbox" checked> Project</label>
+                    <label><input type="checkbox" checked> ServiceType</label>
+                    <label><input type="checkbox" checked> VehicleType</label>
+                    <label><input type="checkbox" checked> ReadyTime</label>
+                    <label><input type="checkbox" checked> DeliverBefore</label>
+                    <label><input type="checkbox" checked> OrderNotes</label>
+                    <div class="divider"></div>
+                    <div class="section-label">Pickup</div>
+                    <label><input type="checkbox" checked> P Name</label>
+                    <label><input type="checkbox" checked> P Address</label>
+                    <label><input type="checkbox" checked> P Zip</label>
+                    <label><input type="checkbox" checked> P City</label>
+                    <label><input type="checkbox" checked> P Country</label>
+                    <label><input type="checkbox" checked> P Enroute</label>
+                    <label><input type="checkbox" checked> P Arrived</label>
+                    <label><input type="checkbox" checked> P Completed</label>
+                    <label><input type="checkbox" checked> P SignedBy</label>
+                    <label><input type="checkbox" checked> P Deviation</label>
+                    <div class="divider"></div>
+                    <div class="section-label">Delivery</div>
+                    <label><input type="checkbox" checked> D Name</label>
+                    <label><input type="checkbox" checked> D Address</label>
+                    <label><input type="checkbox" checked> D Zip</label>
+                    <label><input type="checkbox" checked> D City</label>
+                    <label><input type="checkbox" checked> D Country</label>
+                    <label><input type="checkbox" checked> D Enroute</label>
+                    <label><input type="checkbox" checked> D Arrived</label>
+                    <label><input type="checkbox" checked> D Completed</label>
+                    <label><input type="checkbox" checked> D SignedBy</label>
+                    <label><input type="checkbox" checked> D Deviation</label>
+                    <div class="divider"></div>
+                    <div class="section-label">Pricelines</div>
+                    <label><input type="checkbox" checked> Slakteri Slam (Name/Qty/Unit)</label>
+                    <label><input type="checkbox" checked> Ventetid (Name/Qty/Unit)</label>
+                    <div class="divider"></div>
+                    <label><input type="checkbox" checked> OrderPrice</label>
+                </div>
+            </div>
+            <div class="toggle-wrapper">
+                <label>
+                    <span class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </span>
+                    Merge stops
+                </label>
+            </div>
+        </div>
+
+        <div class="pagination">
+            <button class="btn">&larr;</button>
+            <button class="btn active">1</button>
+            <button class="btn">&rarr;</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">OrderId</th>
+                    <th rowspan="2">InvoiceId</th>
+                    <th rowspan="2">Reference</th>
+                    <th rowspan="2">Project</th>
+                    <th rowspan="2">ServiceType</th>
+                    <th rowspan="2">VehicleType</th>
+                    <th rowspan="2">ReadyTime</th>
+                    <th rowspan="2">DeliverBefore</th>
+                    <th rowspan="2">OrderNotes</th>
+                    <th class="section-header-pickup" colspan="8"><span class="type-badge type-P" style="width:16px;height:16px;line-height:16px;font-size:9px;">P</span> Pickup</th>
+                    <th class="section-header-delivery" colspan="8"><span class="type-badge type-D" style="width:16px;height:16px;line-height:16px;font-size:9px;">D</span> Delivery</th>
+                    <th class="priceline-group-header" colspan="3">Slakteri Slam</th>
+                    <th class="priceline-group-header" colspan="3">Ventetid</th>
+                    <th rowspan="2">OrderPrice</th>
+                </tr>
+                <tr>
+                    <!-- Pickup sub-headers -->
+                    <th style="background:#e6f4ea; border-left: 2px solid #dee2e6;">Name</th>
+                    <th style="background:#e6f4ea;">Address</th>
+                    <th style="background:#e6f4ea;">Zip</th>
+                    <th style="background:#e6f4ea;">City</th>
+                    <th style="background:#e6f4ea;">Country</th>
+                    <th style="background:#e6f4ea;">Enroute</th>
+                    <th style="background:#e6f4ea;">Arrived</th>
+                    <th style="background:#e6f4ea; border-right: 2px solid #dee2e6;">Completed</th>
+                    <!-- Delivery sub-headers -->
+                    <th style="background:#dde8f4; border-left: 2px solid #dee2e6;">Name</th>
+                    <th style="background:#dde8f4;">Address</th>
+                    <th style="background:#dde8f4;">Zip</th>
+                    <th style="background:#dde8f4;">City</th>
+                    <th style="background:#dde8f4;">Country</th>
+                    <th style="background:#dde8f4;">Enroute</th>
+                    <th style="background:#dde8f4;">Arrived</th>
+                    <th style="background:#dde8f4; border-right: 2px solid #dee2e6;">Completed</th>
+                    <!-- Priceline sub-headers -->
+                    <th class="priceline-header" style="border-left: 2px solid #dee2e6;">Name</th>
+                    <th class="priceline-header">Qty</th>
+                    <th class="priceline-header">Unit</th>
+                    <th class="priceline-header" style="border-left: 1px solid #f0f0f0;">Name</th>
+                    <th class="priceline-header">Qty</th>
+                    <th class="priceline-header" style="border-right: 2px solid #dee2e6;">Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Order 21100 -->
+                <tr>
+                    <td>21100</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Slakteri Slam</td>
+                    <td>Tankbil</td>
+                    <td>2026-05-09 09:17</td>
+                    <td>2026-05-11 11:17</td>
+                    <td></td>
+                    <!-- Pickup -->
+                    <td class="pickup-start">MOWI AVD. JOSNOYA</td>
+                    <td class="pickup-cell">INDUSTRIPARKVEIN</td>
+                    <td class="pickup-cell">7246</td>
+                    <td class="pickup-cell">SANDSTAD</td>
+                    <td class="pickup-cell">NO</td>
+                    <td class="pickup-cell"></td>
+                    <td class="pickup-cell"></td>
+                    <td class="pickup-cell"></td>
+                    <!-- Delivery -->
+                    <td class="delivery-start">LINDUM AS</td>
+                    <td class="delivery-cell">LERPEVEIEN 155</td>
+                    <td class="delivery-cell">3036</td>
+                    <td class="delivery-cell">DRAMMEN</td>
+                    <td class="delivery-cell">NO</td>
+                    <td class="delivery-cell"></td>
+                    <td class="delivery-cell"></td>
+                    <td class="delivery-cell"></td>
+                    <!-- Pricelines -->
+                    <td class="priceline-group-start"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-group-start"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="number">0.00</td>
+                </tr>
+
+                <!-- Order 21105 -->
+                <tr>
+                    <td>21105</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Slakteri Slam</td>
+                    <td>Tankbil</td>
+                    <td>2026-05-11 09:00</td>
+                    <td>2026-05-11 15:00</td>
+                    <td></td>
+                    <!-- Pickup -->
+                    <td class="pickup-start">MOWI AVD. JOSNOYA</td>
+                    <td class="pickup-cell">INDUSTRIPARKVEIN</td>
+                    <td class="pickup-cell">7246</td>
+                    <td class="pickup-cell">SANDSTAD</td>
+                    <td class="pickup-cell">NO</td>
+                    <td class="pickup-cell">2026-05-11 10:07</td>
+                    <td class="pickup-cell">2026-05-11 12:57</td>
+                    <td class="pickup-cell">2026-05-11 13:21</td>
+                    <!-- Delivery -->
+                    <td class="delivery-start">MARTIN TORELI AS</td>
+                    <td class="delivery-cell">OVRE BOLLI 277</td>
+                    <td class="delivery-cell">6493</td>
+                    <td class="delivery-cell">LYNGSTAD</td>
+                    <td class="delivery-cell">NO</td>
+                    <td class="delivery-cell">2026-05-11 13:21</td>
+                    <td class="delivery-cell"></td>
+                    <td class="delivery-cell"></td>
+                    <!-- Pricelines -->
+                    <td class="priceline-group-start"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-group-start"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="number">0.00</td>
+                </tr>
+
+                <!-- Order 21110 -->
+                <tr>
+                    <td>21110</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Slakteri Slam</td>
+                    <td>Tankbil</td>
+                    <td>2026-05-07 09:10</td>
+                    <td>2026-05-08 11:10</td>
+                    <td></td>
+                    <!-- Pickup -->
+                    <td class="pickup-start">MOWI AVD. JOSNOYA</td>
+                    <td class="pickup-cell">INDUSTRIPARKVEIN</td>
+                    <td class="pickup-cell">7246</td>
+                    <td class="pickup-cell">SANDSTAD</td>
+                    <td class="pickup-cell">NO</td>
+                    <td class="pickup-cell">2026-05-06 11:37</td>
+                    <td class="pickup-cell">2026-05-06 11:37</td>
+                    <td class="pickup-cell">2026-05-06 11:37</td>
+                    <!-- Delivery -->
+                    <td class="delivery-start">LINDUM AS</td>
+                    <td class="delivery-cell">LERPEVEIEN 155</td>
+                    <td class="delivery-cell">3036</td>
+                    <td class="delivery-cell">DRAMMEN</td>
+                    <td class="delivery-cell">NO</td>
+                    <td class="delivery-cell">2026-05-07 11:38</td>
+                    <td class="delivery-cell">2026-05-07 11:38</td>
+                    <td class="delivery-cell delivery-end">2026-05-07 11:38</td>
+                    <!-- Pricelines -->
+                    <td class="priceline-group-start priceline-section-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">32.40</td>
+                    <td class="priceline-cell">tonn</td>
+                    <td class="priceline-group-start">Ventetid</td>
+                    <td class="priceline-cell number">1.50</td>
+                    <td class="priceline-cell priceline-section-end">timer</td>
+                    <td class="number">0.00</td>
+                </tr>
+
+                <!-- Order 21115 -->
+                <tr>
+                    <td>21115</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Slakteri Slam</td>
+                    <td>Tankbil</td>
+                    <td>2026-05-08 09:00</td>
+                    <td>2026-05-08 15:00</td>
+                    <td></td>
+                    <!-- Pickup -->
+                    <td class="pickup-start">MOWI AVD. JOSNOYA</td>
+                    <td class="pickup-cell">INDUSTRIPARKVEIN</td>
+                    <td class="pickup-cell">7246</td>
+                    <td class="pickup-cell">SANDSTAD</td>
+                    <td class="pickup-cell">NO</td>
+                    <td class="pickup-cell">2026-05-08 12:14</td>
+                    <td class="pickup-cell">2026-05-08 12:14</td>
+                    <td class="pickup-cell pickup-end">2026-05-08 12:15</td>
+                    <!-- Delivery -->
+                    <td class="delivery-start">MARTIN TORELI AS</td>
+                    <td class="delivery-cell">OVRE BOLLI 277</td>
+                    <td class="delivery-cell">6493</td>
+                    <td class="delivery-cell">LYNGSTAD</td>
+                    <td class="delivery-cell">NO</td>
+                    <td class="delivery-cell">2026-05-08 18:32</td>
+                    <td class="delivery-cell">2026-05-08 18:32</td>
+                    <td class="delivery-cell delivery-end">2026-05-08 18:32</td>
+                    <!-- Pricelines -->
+                    <td class="priceline-group-start priceline-section-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">31.10</td>
+                    <td class="priceline-cell">tonn</td>
+                    <td class="priceline-group-start"></td>
+                    <td class="priceline-cell"></td>
+                    <td class="priceline-cell priceline-section-end"></td>
+                    <td class="number">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('click', function(e) {
+            var dropdown = document.getElementById('colFilterDropdown');
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
