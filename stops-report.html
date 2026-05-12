@@ -197,38 +197,38 @@
                     Select Columns &#9662;
                 </button>
                 <div class="dropdown-menu" id="colMenu">
-                    <label><input type="checkbox" checked> Select All</label>
+                    <label><input type="checkbox" checked onchange="handleSelectAll(this)"> Select All</label>
                     <div class="divider"></div>
                     <div class="section-label">General</div>
-                    <label><input type="checkbox" checked> Orderid</label>
-                    <label><input type="checkbox" checked> Trackingid</label>
-                    <label class="stops-only"><input type="checkbox" checked> T</label>
-                    <label><input type="checkbox" checked> Name</label>
-                    <label><input type="checkbox" checked> Address</label>
-                    <label><input type="checkbox" checked> Zip</label>
-                    <label><input type="checkbox" checked> City</label>
-                    <label><input type="checkbox" checked> Country</label>
-                    <label><input type="checkbox" checked> InvoiceId</label>
-                    <label><input type="checkbox" checked> Reference</label>
-                    <label><input type="checkbox" checked> Project</label>
-                    <label><input type="checkbox" checked> ServiceType</label>
-                    <label><input type="checkbox" checked> VehicleType</label>
+                    <label data-col="orderid"><input type="checkbox" checked onchange="applyColumnFilter()"> Orderid</label>
+                    <label data-col="trackingid"><input type="checkbox" checked onchange="applyColumnFilter()"> Trackingid</label>
+                    <label data-col="type" class="stops-only"><input type="checkbox" checked onchange="applyColumnFilter()"> T</label>
+                    <label data-col="name"><input type="checkbox" checked onchange="applyColumnFilter()"> Name</label>
+                    <label data-col="address"><input type="checkbox" checked onchange="applyColumnFilter()"> Address</label>
+                    <label data-col="zip"><input type="checkbox" checked onchange="applyColumnFilter()"> Zip</label>
+                    <label data-col="city"><input type="checkbox" checked onchange="applyColumnFilter()"> City</label>
+                    <label data-col="country"><input type="checkbox" checked onchange="applyColumnFilter()"> Country</label>
+                    <label data-col="invoiceid"><input type="checkbox" checked onchange="applyColumnFilter()"> InvoiceId</label>
+                    <label data-col="reference"><input type="checkbox" checked onchange="applyColumnFilter()"> Reference</label>
+                    <label data-col="project"><input type="checkbox" checked onchange="applyColumnFilter()"> Project</label>
+                    <label data-col="servicetype"><input type="checkbox" checked onchange="applyColumnFilter()"> ServiceType</label>
+                    <label data-col="vehicletype"><input type="checkbox" checked onchange="applyColumnFilter()"> VehicleType</label>
                     <div class="divider"></div>
                     <div class="section-label">Timestamps</div>
-                    <label><input type="checkbox" checked> Readytime</label>
-                    <label><input type="checkbox" checked> Deadlinetime</label>
-                    <label><input type="checkbox" checked> Enroute</label>
-                    <label><input type="checkbox" checked> Arrived</label>
-                    <label><input type="checkbox" checked> Completed</label>
-                    <label><input type="checkbox" checked> SignedBy</label>
-                    <label><input type="checkbox" checked> Deviation</label>
-                    <label><input type="checkbox" checked> OrderNotes</label>
+                    <label data-col="readytime"><input type="checkbox" checked onchange="applyColumnFilter()"> Readytime</label>
+                    <label data-col="deadlinetime"><input type="checkbox" checked onchange="applyColumnFilter()"> Deadlinetime</label>
+                    <label data-col="enroute"><input type="checkbox" checked onchange="applyColumnFilter()"> Enroute</label>
+                    <label data-col="arrived"><input type="checkbox" checked onchange="applyColumnFilter()"> Arrived</label>
+                    <label data-col="completed"><input type="checkbox" checked onchange="applyColumnFilter()"> Completed</label>
+                    <label data-col="signedby"><input type="checkbox" checked onchange="applyColumnFilter()"> SignedBy</label>
+                    <label data-col="deviation"><input type="checkbox" checked onchange="applyColumnFilter()"> Deviation</label>
+                    <label data-col="ordernotes"><input type="checkbox" checked onchange="applyColumnFilter()"> OrderNotes</label>
                     <div class="divider"></div>
                     <div class="section-label">Pricelines</div>
-                    <label><input type="checkbox" checked> Slakteri Slam (Name/Qty/Unit)</label>
-                    <label><input type="checkbox" checked> Ventetid (Name/Qty/Unit)</label>
+                    <label data-col="slakteri"><input type="checkbox" checked onchange="applyColumnFilter()"> Slakteri Slam (Name/Qty/Unit)</label>
+                    <label data-col="ventetid"><input type="checkbox" checked onchange="applyColumnFilter()"> Ventetid (Name/Qty/Unit)</label>
                     <div class="divider"></div>
-                    <label><input type="checkbox" checked> OrderPrice</label>
+                    <label data-col="orderprice"><input type="checkbox" checked onchange="applyColumnFilter()"> OrderPrice</label>
                 </div>
             </div>
             <div class="toggle-wrapper">
@@ -247,157 +247,161 @@
             <table>
                 <thead>
                     <tr>
-                        <th rowspan="2">Orderid <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Trackingid <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">T <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Name <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Address <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Zip <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">City <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Country <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">InvoiceId <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Reference <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Project <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">ServiceType <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">VehicleType <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Readytime <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Deadlinetime <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Enroute <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Arrived <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Completed <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">SignedBy <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Deviation <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">OrderNotes <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th class="priceline-group-header" colspan="3">Slakteri Slam</th>
-                        <th class="priceline-group-header" colspan="3">Ventetid</th>
-                        <th rowspan="2">OrderPrice <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="orderid">Orderid <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="trackingid">Trackingid <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="type">T <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="name">Name <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="address">Address <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="zip">Zip <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="city">City <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="country">Country <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="invoiceid">InvoiceId <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="reference">Reference <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="project">Project <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="servicetype">ServiceType <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="vehicletype">VehicleType <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="readytime">Readytime <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="deadlinetime">Deadlinetime <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="enroute">Enroute <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="arrived">Arrived <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="completed">Completed <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="signedby">SignedBy <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="deviation">Deviation <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="ordernotes">OrderNotes <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th class="priceline-group-header" colspan="3" data-col="slakteri">Slakteri Slam</th>
+                        <th class="priceline-group-header" colspan="3" data-col="ventetid">Ventetid</th>
+                        <th rowspan="2" data-col="orderprice">OrderPrice <span class="sort-arrows">&#9650;&#9660;</span></th>
                     </tr>
                     <tr>
-                        <th class="priceline-header">Name</th>
-                        <th class="priceline-header">Qty</th>
-                        <th class="priceline-header">Unit</th>
-                        <th class="priceline-header">Name</th>
-                        <th class="priceline-header">Qty</th>
-                        <th class="priceline-header">Unit</th>
+                        <th class="priceline-header" data-col="slakteri">Name</th>
+                        <th class="priceline-header" data-col="slakteri">Qty</th>
+                        <th class="priceline-header" data-col="slakteri">Unit</th>
+                        <th class="priceline-header" data-col="ventetid">Name</th>
+                        <th class="priceline-header" data-col="ventetid">Qty</th>
+                        <th class="priceline-header" data-col="ventetid">Unit</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Order 21100 -->
                     <tr class="group-row">
-                        <td><span class="group-label">21100</span></td>
-                        <td colspan="20"></td>
-                        <td></td><td></td><td></td>
-                        <td></td><td></td><td></td>
-                        <td><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
+                        <td data-col="orderid"><span class="group-label">21100</span></td>
+                        <td data-col="spacer" colspan="20"></td>
+                        <td data-col="slakteri"></td><td data-col="slakteri"></td><td data-col="slakteri"></td>
+                        <td data-col="ventetid"></td><td data-col="ventetid"></td><td data-col="ventetid"></td>
+                        <td data-col="orderprice"><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
                     </tr>
                     <tr>
-                        <td>21100</td><td style="font-size:10px;">20416a163d4d1513d6...</td>
-                        <td><span class="type-badge type-P">P</span></td>
-                        <td>MOWI AVD. JOSNOYA</td><td>INDUSTRIPARKVEIN</td><td>7246</td><td>SANDSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-09 09:17</td><td>2026-05-11 11:17</td><td></td><td></td><td></td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21100</td><td data-col="trackingid" style="font-size:10px;">20416a163d4d1513d6...</td>
+                        <td data-col="type"><span class="type-badge type-P">P</span></td>
+                        <td data-col="name">MOWI AVD. JOSNOYA</td><td data-col="address">INDUSTRIPARKVEIN</td><td data-col="zip">7246</td><td data-col="city">SANDSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-09 09:17</td><td data-col="deadlinetime">2026-05-11 11:17</td><td data-col="enroute"></td><td data-col="arrived"></td><td data-col="completed"></td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                     <tr>
-                        <td>21100</td><td style="font-size:10px;">20416a163d4d1513d6...</td>
-                        <td><span class="type-badge type-D">D</span></td>
-                        <td>LINDUM AS</td><td>LERPEVEIEN 155</td><td>3036</td><td>DRAMMEN</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-09 09:17</td><td>2026-05-11 11:17</td><td></td><td></td><td></td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21100</td><td data-col="trackingid" style="font-size:10px;">20416a163d4d1513d6...</td>
+                        <td data-col="type"><span class="type-badge type-D">D</span></td>
+                        <td data-col="name">LINDUM AS</td><td data-col="address">LERPEVEIEN 155</td><td data-col="zip">3036</td><td data-col="city">DRAMMEN</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-09 09:17</td><td data-col="deadlinetime">2026-05-11 11:17</td><td data-col="enroute"></td><td data-col="arrived"></td><td data-col="completed"></td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
 
+                    <!-- Order 21105 -->
                     <tr class="group-row">
-                        <td><span class="group-label">21105</span></td>
-                        <td colspan="20"></td>
-                        <td></td><td></td><td></td>
-                        <td></td><td></td><td></td>
-                        <td><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
+                        <td data-col="orderid"><span class="group-label">21105</span></td>
+                        <td data-col="spacer" colspan="20"></td>
+                        <td data-col="slakteri"></td><td data-col="slakteri"></td><td data-col="slakteri"></td>
+                        <td data-col="ventetid"></td><td data-col="ventetid"></td><td data-col="ventetid"></td>
+                        <td data-col="orderprice"><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
                     </tr>
                     <tr>
-                        <td>21105</td><td style="font-size:10px;">7e5b2ff37099eb1c45...</td>
-                        <td><span class="type-badge type-P">P</span></td>
-                        <td>MOWI AVD. JOSNOYA</td><td>INDUSTRIPARKVEIN</td><td>7246</td><td>SANDSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-11 09:00</td><td>2026-05-11 15:00</td><td>2026-05-11 10:07</td><td>2026-05-11 12:57</td><td>2026-05-11 13:21</td><td>Dagove</td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21105</td><td data-col="trackingid" style="font-size:10px;">7e5b2ff37099eb1c45...</td>
+                        <td data-col="type"><span class="type-badge type-P">P</span></td>
+                        <td data-col="name">MOWI AVD. JOSNOYA</td><td data-col="address">INDUSTRIPARKVEIN</td><td data-col="zip">7246</td><td data-col="city">SANDSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-11 09:00</td><td data-col="deadlinetime">2026-05-11 15:00</td><td data-col="enroute">2026-05-11 10:07</td><td data-col="arrived">2026-05-11 12:57</td><td data-col="completed">2026-05-11 13:21</td><td data-col="signedby">Dagove</td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                     <tr>
-                        <td>21105</td><td style="font-size:10px;">7e5b2ff37099eb1c45...</td>
-                        <td><span class="type-badge type-D">D</span></td>
-                        <td>MARTIN TORELI AS</td><td>OVRE BOLLI 277</td><td>6493</td><td>LYNGSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-11 09:00</td><td>2026-05-11 15:00</td><td>2026-05-11 13:21</td><td></td><td></td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21105</td><td data-col="trackingid" style="font-size:10px;">7e5b2ff37099eb1c45...</td>
+                        <td data-col="type"><span class="type-badge type-D">D</span></td>
+                        <td data-col="name">MARTIN TORELI AS</td><td data-col="address">OVRE BOLLI 277</td><td data-col="zip">6493</td><td data-col="city">LYNGSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-11 09:00</td><td data-col="deadlinetime">2026-05-11 15:00</td><td data-col="enroute">2026-05-11 13:21</td><td data-col="arrived"></td><td data-col="completed"></td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
 
+                    <!-- Order 21110 -->
                     <tr class="group-row">
-                        <td><span class="group-label">21110</span></td>
-                        <td colspan="20"></td>
-                        <td><span class="pill-start">Slakteri Slam:</span></td>
-                        <td><span class="pill-middle">32.40</span></td>
-                        <td><span class="pill-end">tonn</span></td>
-                        <td><span class="pill-start">Ventetid:</span></td>
-                        <td><span class="pill-middle">1.50</span></td>
-                        <td><span class="pill-end">timer</span></td>
-                        <td><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
+                        <td data-col="orderid"><span class="group-label">21110</span></td>
+                        <td data-col="spacer" colspan="20"></td>
+                        <td data-col="slakteri"><span class="pill-start">Slakteri Slam:</span></td>
+                        <td data-col="slakteri"><span class="pill-middle">32.40</span></td>
+                        <td data-col="slakteri"><span class="pill-end">tonn</span></td>
+                        <td data-col="ventetid"><span class="pill-start">Ventetid:</span></td>
+                        <td data-col="ventetid"><span class="pill-middle">1.50</span></td>
+                        <td data-col="ventetid"><span class="pill-end">timer</span></td>
+                        <td data-col="orderprice"><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
                     </tr>
                     <tr>
-                        <td>21110</td><td style="font-size:10px;">a8c3e21f09bb4d7e...</td>
-                        <td><span class="type-badge type-P">P</span></td>
-                        <td>MOWI AVD. JOSNOYA</td><td>INDUSTRIPARKVEIN</td><td>7246</td><td>SANDSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-07 09:10</td><td>2026-05-08 11:10</td><td>2026-05-06 11:37</td><td>2026-05-06 11:37</td><td>2026-05-06 11:37</td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number"></td>
+                        <td data-col="orderid">21110</td><td data-col="trackingid" style="font-size:10px;">a8c3e21f09bb4d7e...</td>
+                        <td data-col="type"><span class="type-badge type-P">P</span></td>
+                        <td data-col="name">MOWI AVD. JOSNOYA</td><td data-col="address">INDUSTRIPARKVEIN</td><td data-col="zip">7246</td><td data-col="city">SANDSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-07 09:10</td><td data-col="deadlinetime">2026-05-08 11:10</td><td data-col="enroute">2026-05-06 11:37</td><td data-col="arrived">2026-05-06 11:37</td><td data-col="completed">2026-05-06 11:37</td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number"></td>
                     </tr>
                     <tr>
-                        <td>21110</td><td style="font-size:10px;">a8c3e21f09bb4d7e...</td>
-                        <td><span class="type-badge type-D">D</span></td>
-                        <td>LINDUM AS</td><td>LERPEVEIEN 155</td><td>3036</td><td>DRAMMEN</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-07 09:10</td><td>2026-05-08 11:10</td><td>2026-05-07 11:38</td><td>2026-05-07 11:38</td><td>2026-05-07 11:38</td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number"></td>
+                        <td data-col="orderid">21110</td><td data-col="trackingid" style="font-size:10px;">a8c3e21f09bb4d7e...</td>
+                        <td data-col="type"><span class="type-badge type-D">D</span></td>
+                        <td data-col="name">LINDUM AS</td><td data-col="address">LERPEVEIEN 155</td><td data-col="zip">3036</td><td data-col="city">DRAMMEN</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-07 09:10</td><td data-col="deadlinetime">2026-05-08 11:10</td><td data-col="enroute">2026-05-07 11:38</td><td data-col="arrived">2026-05-07 11:38</td><td data-col="completed">2026-05-07 11:38</td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number"></td>
                     </tr>
 
+                    <!-- Order 21115 -->
                     <tr class="group-row">
-                        <td><span class="group-label">21115</span></td>
-                        <td colspan="20"></td>
-                        <td><span class="pill-start">Slakteri Slam:</span></td>
-                        <td><span class="pill-middle">31.10</span></td>
-                        <td><span class="pill-end">tonn</span></td>
-                        <td></td><td></td><td></td>
-                        <td><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
+                        <td data-col="orderid"><span class="group-label">21115</span></td>
+                        <td data-col="spacer" colspan="20"></td>
+                        <td data-col="slakteri"><span class="pill-start">Slakteri Slam:</span></td>
+                        <td data-col="slakteri"><span class="pill-middle">31.10</span></td>
+                        <td data-col="slakteri"><span class="pill-end">tonn</span></td>
+                        <td data-col="ventetid"></td><td data-col="ventetid"></td><td data-col="ventetid"></td>
+                        <td data-col="orderprice"><span class="pill-solo"><span style="color:#a0aec0;">Total: </span><span style="color:#68d391;font-weight:600;">0.00</span></span></td>
                     </tr>
                     <tr>
-                        <td>21115</td><td style="font-size:10px;">b2d4f67890ac1e3f...</td>
-                        <td><span class="type-badge type-P">P</span></td>
-                        <td>MOWI AVD. JOSNOYA</td><td>INDUSTRIPARKVEIN</td><td>7246</td><td>SANDSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-08 09:00</td><td>2026-05-08 15:00</td><td>2026-05-08 12:14</td><td>2026-05-08 12:14</td><td>2026-05-08 12:15</td><td>Mowi</td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number"></td>
+                        <td data-col="orderid">21115</td><td data-col="trackingid" style="font-size:10px;">b2d4f67890ac1e3f...</td>
+                        <td data-col="type"><span class="type-badge type-P">P</span></td>
+                        <td data-col="name">MOWI AVD. JOSNOYA</td><td data-col="address">INDUSTRIPARKVEIN</td><td data-col="zip">7246</td><td data-col="city">SANDSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-08 09:00</td><td data-col="deadlinetime">2026-05-08 15:00</td><td data-col="enroute">2026-05-08 12:14</td><td data-col="arrived">2026-05-08 12:14</td><td data-col="completed">2026-05-08 12:15</td><td data-col="signedby">Mowi</td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number"></td>
                     </tr>
                     <tr>
-                        <td>21115</td><td style="font-size:10px;">b2d4f67890ac1e3f...</td>
-                        <td><span class="type-badge type-D">D</span></td>
-                        <td>MARTIN TORELI AS</td><td>OVRE BOLLI 277</td><td>6493</td><td>LYNGSTAD</td><td>NO</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-08 09:00</td><td>2026-05-08 15:00</td><td>2026-05-08 18:32</td><td>2026-05-08 18:32</td><td>2026-05-08 18:32</td><td></td><td></td><td></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td>
-                        <td class="number"></td>
+                        <td data-col="orderid">21115</td><td data-col="trackingid" style="font-size:10px;">b2d4f67890ac1e3f...</td>
+                        <td data-col="type"><span class="type-badge type-D">D</span></td>
+                        <td data-col="name">MARTIN TORELI AS</td><td data-col="address">OVRE BOLLI 277</td><td data-col="zip">6493</td><td data-col="city">LYNGSTAD</td><td data-col="country">NO</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-08 09:00</td><td data-col="deadlinetime">2026-05-08 15:00</td><td data-col="enroute">2026-05-08 18:32</td><td data-col="arrived">2026-05-08 18:32</td><td data-col="completed">2026-05-08 18:32</td><td data-col="signedby"></td><td data-col="deviation"></td><td data-col="ordernotes"></td>
+                        <td data-col="slakteri" class="priceline-group-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td>
+                        <td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell"></td>
+                        <td data-col="orderprice" class="number"></td>
                     </tr>
                 </tbody>
             </table>
@@ -408,83 +412,83 @@
             <table id="merged-table">
                 <thead>
                     <tr>
-                        <th rowspan="2">Orderid <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Trackingid <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">InvoiceId <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Reference <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Project <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">ServiceType <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">VehicleType <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Readytime <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">Deadlinetime <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th rowspan="2">OrderNotes <span class="sort-arrows">&#9650;&#9660;</span></th>
-                        <th class="section-header-pickup" colspan="8"><span class="type-badge type-P" style="width:16px;height:16px;line-height:16px;font-size:9px;">P</span> Pickup</th>
-                        <th class="section-header-delivery" colspan="8"><span class="type-badge type-D" style="width:16px;height:16px;line-height:16px;font-size:9px;">D</span> Delivery</th>
-                        <th class="priceline-group-header" colspan="3">Slakteri Slam</th>
-                        <th class="priceline-group-header" colspan="3">Ventetid</th>
-                        <th rowspan="2">OrderPrice <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="orderid">Orderid <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="trackingid">Trackingid <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="invoiceid">InvoiceId <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="reference">Reference <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="project">Project <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="servicetype">ServiceType <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="vehicletype">VehicleType <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="readytime">Readytime <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="deadlinetime">Deadlinetime <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th rowspan="2" data-col="ordernotes">OrderNotes <span class="sort-arrows">&#9650;&#9660;</span></th>
+                        <th class="section-header-pickup" data-col="pickup-section" colspan="8"><span class="type-badge type-P" style="width:16px;height:16px;line-height:16px;font-size:9px;">P</span> Pickup</th>
+                        <th class="section-header-delivery" data-col="delivery-section" colspan="8"><span class="type-badge type-D" style="width:16px;height:16px;line-height:16px;font-size:9px;">D</span> Delivery</th>
+                        <th class="priceline-group-header" colspan="3" data-col="slakteri">Slakteri Slam</th>
+                        <th class="priceline-group-header" colspan="3" data-col="ventetid">Ventetid</th>
+                        <th rowspan="2" data-col="orderprice">OrderPrice <span class="sort-arrows">&#9650;&#9660;</span></th>
                     </tr>
                     <tr>
-                        <th style="background:#e6f4ea; border-left: 2px solid #dee2e6;">Name</th>
-                        <th style="background:#e6f4ea;">Address</th>
-                        <th style="background:#e6f4ea;">Zip</th>
-                        <th style="background:#e6f4ea;">City</th>
-                        <th style="background:#e6f4ea;">Country</th>
-                        <th style="background:#e6f4ea;">Enroute</th>
-                        <th style="background:#e6f4ea;">Arrived</th>
-                        <th style="background:#e6f4ea; border-right: 2px solid #dee2e6;">Completed</th>
-                        <th style="background:#dde8f4; border-left: 2px solid #dee2e6;">Name</th>
-                        <th style="background:#dde8f4;">Address</th>
-                        <th style="background:#dde8f4;">Zip</th>
-                        <th style="background:#dde8f4;">City</th>
-                        <th style="background:#dde8f4;">Country</th>
-                        <th style="background:#dde8f4;">Enroute</th>
-                        <th style="background:#dde8f4;">Arrived</th>
-                        <th style="background:#dde8f4; border-right: 2px solid #dee2e6;">Completed</th>
-                        <th class="priceline-header" style="border-left: 2px solid #dee2e6;">Name</th>
-                        <th class="priceline-header">Qty</th>
-                        <th class="priceline-header">Unit</th>
-                        <th class="priceline-header" style="border-left: 1px solid #f0f0f0;">Name</th>
-                        <th class="priceline-header">Qty</th>
-                        <th class="priceline-header" style="border-right: 2px solid #dee2e6;">Unit</th>
+                        <th style="background:#e6f4ea; border-left: 2px solid #dee2e6;" data-col="name">Name</th>
+                        <th style="background:#e6f4ea;" data-col="address">Address</th>
+                        <th style="background:#e6f4ea;" data-col="zip">Zip</th>
+                        <th style="background:#e6f4ea;" data-col="city">City</th>
+                        <th style="background:#e6f4ea;" data-col="country">Country</th>
+                        <th style="background:#e6f4ea;" data-col="enroute">Enroute</th>
+                        <th style="background:#e6f4ea;" data-col="arrived">Arrived</th>
+                        <th style="background:#e6f4ea; border-right: 2px solid #dee2e6;" data-col="completed">Completed</th>
+                        <th style="background:#dde8f4; border-left: 2px solid #dee2e6;" data-col="name">Name</th>
+                        <th style="background:#dde8f4;" data-col="address">Address</th>
+                        <th style="background:#dde8f4;" data-col="zip">Zip</th>
+                        <th style="background:#dde8f4;" data-col="city">City</th>
+                        <th style="background:#dde8f4;" data-col="country">Country</th>
+                        <th style="background:#dde8f4;" data-col="enroute">Enroute</th>
+                        <th style="background:#dde8f4;" data-col="arrived">Arrived</th>
+                        <th style="background:#dde8f4; border-right: 2px solid #dee2e6;" data-col="completed">Completed</th>
+                        <th class="priceline-header" style="border-left: 2px solid #dee2e6;" data-col="slakteri">Name</th>
+                        <th class="priceline-header" data-col="slakteri">Qty</th>
+                        <th class="priceline-header" data-col="slakteri">Unit</th>
+                        <th class="priceline-header" style="border-left: 1px solid #f0f0f0;" data-col="ventetid">Name</th>
+                        <th class="priceline-header" data-col="ventetid">Qty</th>
+                        <th class="priceline-header" style="border-right: 2px solid #dee2e6;" data-col="ventetid">Unit</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>21100</td><td style="font-size:10px;">20416a163d4d1513d6...</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-09 09:17</td><td>2026-05-11 11:17</td><td></td>
-                        <td class="pickup-start">MOWI AVD. JOSNOYA</td><td class="pickup-cell">INDUSTRIPARKVEIN</td><td class="pickup-cell">7246</td><td class="pickup-cell">SANDSTAD</td><td class="pickup-cell">NO</td><td class="pickup-cell"></td><td class="pickup-cell"></td><td class="pickup-cell pickup-end"></td>
-                        <td class="delivery-start">LINDUM AS</td><td class="delivery-cell">LERPEVEIEN 155</td><td class="delivery-cell">3036</td><td class="delivery-cell">DRAMMEN</td><td class="delivery-cell">NO</td><td class="delivery-cell"></td><td class="delivery-cell"></td><td class="delivery-cell delivery-end"></td>
-                        <td class="priceline-group-start priceline-section-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td><td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell priceline-section-end"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21100</td><td data-col="trackingid" style="font-size:10px;">20416a163d4d1513d6...</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-09 09:17</td><td data-col="deadlinetime">2026-05-11 11:17</td><td data-col="ordernotes"></td>
+                        <td data-col="name" class="pickup-start">MOWI AVD. JOSNOYA</td><td data-col="address" class="pickup-cell">INDUSTRIPARKVEIN</td><td data-col="zip" class="pickup-cell">7246</td><td data-col="city" class="pickup-cell">SANDSTAD</td><td data-col="country" class="pickup-cell">NO</td><td data-col="enroute" class="pickup-cell"></td><td data-col="arrived" class="pickup-cell"></td><td data-col="completed" class="pickup-cell pickup-end"></td>
+                        <td data-col="name" class="delivery-start">LINDUM AS</td><td data-col="address" class="delivery-cell">LERPEVEIEN 155</td><td data-col="zip" class="delivery-cell">3036</td><td data-col="city" class="delivery-cell">DRAMMEN</td><td data-col="country" class="delivery-cell">NO</td><td data-col="enroute" class="delivery-cell"></td><td data-col="arrived" class="delivery-cell"></td><td data-col="completed" class="delivery-cell delivery-end"></td>
+                        <td data-col="slakteri" class="priceline-group-start priceline-section-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell priceline-section-end"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                     <tr>
-                        <td>21105</td><td style="font-size:10px;">7e5b2ff37099eb1c45...</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-11 09:00</td><td>2026-05-11 15:00</td><td></td>
-                        <td class="pickup-start">MOWI AVD. JOSNOYA</td><td class="pickup-cell">INDUSTRIPARKVEIN</td><td class="pickup-cell">7246</td><td class="pickup-cell">SANDSTAD</td><td class="pickup-cell">NO</td><td class="pickup-cell">2026-05-11 10:07</td><td class="pickup-cell">2026-05-11 12:57</td><td class="pickup-cell pickup-end">2026-05-11 13:21</td>
-                        <td class="delivery-start">MARTIN TORELI AS</td><td class="delivery-cell">OVRE BOLLI 277</td><td class="delivery-cell">6493</td><td class="delivery-cell">LYNGSTAD</td><td class="delivery-cell">NO</td><td class="delivery-cell">2026-05-11 13:21</td><td class="delivery-cell"></td><td class="delivery-cell delivery-end"></td>
-                        <td class="priceline-group-start priceline-section-start"></td><td class="priceline-cell"></td><td class="priceline-cell"></td><td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell priceline-section-end"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21105</td><td data-col="trackingid" style="font-size:10px;">7e5b2ff37099eb1c45...</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-11 09:00</td><td data-col="deadlinetime">2026-05-11 15:00</td><td data-col="ordernotes"></td>
+                        <td data-col="name" class="pickup-start">MOWI AVD. JOSNOYA</td><td data-col="address" class="pickup-cell">INDUSTRIPARKVEIN</td><td data-col="zip" class="pickup-cell">7246</td><td data-col="city" class="pickup-cell">SANDSTAD</td><td data-col="country" class="pickup-cell">NO</td><td data-col="enroute" class="pickup-cell">2026-05-11 10:07</td><td data-col="arrived" class="pickup-cell">2026-05-11 12:57</td><td data-col="completed" class="pickup-cell pickup-end">2026-05-11 13:21</td>
+                        <td data-col="name" class="delivery-start">MARTIN TORELI AS</td><td data-col="address" class="delivery-cell">OVRE BOLLI 277</td><td data-col="zip" class="delivery-cell">6493</td><td data-col="city" class="delivery-cell">LYNGSTAD</td><td data-col="country" class="delivery-cell">NO</td><td data-col="enroute" class="delivery-cell">2026-05-11 13:21</td><td data-col="arrived" class="delivery-cell"></td><td data-col="completed" class="delivery-cell delivery-end"></td>
+                        <td data-col="slakteri" class="priceline-group-start priceline-section-start"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="slakteri" class="priceline-cell"></td><td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell priceline-section-end"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                     <tr>
-                        <td>21110</td><td style="font-size:10px;">a8c3e21f09bb4d7e...</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-07 09:10</td><td>2026-05-08 11:10</td><td></td>
-                        <td class="pickup-start">MOWI AVD. JOSNOYA</td><td class="pickup-cell">INDUSTRIPARKVEIN</td><td class="pickup-cell">7246</td><td class="pickup-cell">SANDSTAD</td><td class="pickup-cell">NO</td><td class="pickup-cell">2026-05-06 11:37</td><td class="pickup-cell">2026-05-06 11:37</td><td class="pickup-cell pickup-end">2026-05-06 11:37</td>
-                        <td class="delivery-start">LINDUM AS</td><td class="delivery-cell">LERPEVEIEN 155</td><td class="delivery-cell">3036</td><td class="delivery-cell">DRAMMEN</td><td class="delivery-cell">NO</td><td class="delivery-cell">2026-05-07 11:38</td><td class="delivery-cell">2026-05-07 11:38</td><td class="delivery-cell delivery-end">2026-05-07 11:38</td>
-                        <td class="priceline-group-start priceline-section-start">Slakteri Slam</td><td class="priceline-cell number">32.40</td><td class="priceline-cell">tonn</td><td class="priceline-group-start">Ventetid</td><td class="priceline-cell number">1.50</td><td class="priceline-cell priceline-section-end">timer</td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21110</td><td data-col="trackingid" style="font-size:10px;">a8c3e21f09bb4d7e...</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-07 09:10</td><td data-col="deadlinetime">2026-05-08 11:10</td><td data-col="ordernotes"></td>
+                        <td data-col="name" class="pickup-start">MOWI AVD. JOSNOYA</td><td data-col="address" class="pickup-cell">INDUSTRIPARKVEIN</td><td data-col="zip" class="pickup-cell">7246</td><td data-col="city" class="pickup-cell">SANDSTAD</td><td data-col="country" class="pickup-cell">NO</td><td data-col="enroute" class="pickup-cell">2026-05-06 11:37</td><td data-col="arrived" class="pickup-cell">2026-05-06 11:37</td><td data-col="completed" class="pickup-cell pickup-end">2026-05-06 11:37</td>
+                        <td data-col="name" class="delivery-start">LINDUM AS</td><td data-col="address" class="delivery-cell">LERPEVEIEN 155</td><td data-col="zip" class="delivery-cell">3036</td><td data-col="city" class="delivery-cell">DRAMMEN</td><td data-col="country" class="delivery-cell">NO</td><td data-col="enroute" class="delivery-cell">2026-05-07 11:38</td><td data-col="arrived" class="delivery-cell">2026-05-07 11:38</td><td data-col="completed" class="delivery-cell delivery-end">2026-05-07 11:38</td>
+                        <td data-col="slakteri" class="priceline-group-start priceline-section-start">Slakteri Slam</td><td data-col="slakteri" class="priceline-cell number">32.40</td><td data-col="slakteri" class="priceline-cell">tonn</td><td data-col="ventetid" class="priceline-group-start">Ventetid</td><td data-col="ventetid" class="priceline-cell number">1.50</td><td data-col="ventetid" class="priceline-cell priceline-section-end">timer</td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                     <tr>
-                        <td>21115</td><td style="font-size:10px;">b2d4f67890ac1e3f...</td>
-                        <td></td><td></td><td></td><td>Slakteri Slam</td><td>Tankbil</td>
-                        <td>2026-05-08 09:00</td><td>2026-05-08 15:00</td><td></td>
-                        <td class="pickup-start">MOWI AVD. JOSNOYA</td><td class="pickup-cell">INDUSTRIPARKVEIN</td><td class="pickup-cell">7246</td><td class="pickup-cell">SANDSTAD</td><td class="pickup-cell">NO</td><td class="pickup-cell">2026-05-08 12:14</td><td class="pickup-cell">2026-05-08 12:14</td><td class="pickup-cell pickup-end">2026-05-08 12:15</td>
-                        <td class="delivery-start">MARTIN TORELI AS</td><td class="delivery-cell">OVRE BOLLI 277</td><td class="delivery-cell">6493</td><td class="delivery-cell">LYNGSTAD</td><td class="delivery-cell">NO</td><td class="delivery-cell">2026-05-08 18:32</td><td class="delivery-cell">2026-05-08 18:32</td><td class="delivery-cell delivery-end">2026-05-08 18:32</td>
-                        <td class="priceline-group-start priceline-section-start">Slakteri Slam</td><td class="priceline-cell number">31.10</td><td class="priceline-cell">tonn</td><td class="priceline-group-start"></td><td class="priceline-cell"></td><td class="priceline-cell priceline-section-end"></td>
-                        <td class="number">0.00</td>
+                        <td data-col="orderid">21115</td><td data-col="trackingid" style="font-size:10px;">b2d4f67890ac1e3f...</td>
+                        <td data-col="invoiceid"></td><td data-col="reference"></td><td data-col="project"></td><td data-col="servicetype">Slakteri Slam</td><td data-col="vehicletype">Tankbil</td>
+                        <td data-col="readytime">2026-05-08 09:00</td><td data-col="deadlinetime">2026-05-08 15:00</td><td data-col="ordernotes"></td>
+                        <td data-col="name" class="pickup-start">MOWI AVD. JOSNOYA</td><td data-col="address" class="pickup-cell">INDUSTRIPARKVEIN</td><td data-col="zip" class="pickup-cell">7246</td><td data-col="city" class="pickup-cell">SANDSTAD</td><td data-col="country" class="pickup-cell">NO</td><td data-col="enroute" class="pickup-cell">2026-05-08 12:14</td><td data-col="arrived" class="pickup-cell">2026-05-08 12:14</td><td data-col="completed" class="pickup-cell pickup-end">2026-05-08 12:15</td>
+                        <td data-col="name" class="delivery-start">MARTIN TORELI AS</td><td data-col="address" class="delivery-cell">OVRE BOLLI 277</td><td data-col="zip" class="delivery-cell">6493</td><td data-col="city" class="delivery-cell">LYNGSTAD</td><td data-col="country" class="delivery-cell">NO</td><td data-col="enroute" class="delivery-cell">2026-05-08 18:32</td><td data-col="arrived" class="delivery-cell">2026-05-08 18:32</td><td data-col="completed" class="delivery-cell delivery-end">2026-05-08 18:32</td>
+                        <td data-col="slakteri" class="priceline-group-start priceline-section-start">Slakteri Slam</td><td data-col="slakteri" class="priceline-cell number">31.10</td><td data-col="slakteri" class="priceline-cell">tonn</td><td data-col="ventetid" class="priceline-group-start"></td><td data-col="ventetid" class="priceline-cell"></td><td data-col="ventetid" class="priceline-cell priceline-section-end"></td>
+                        <td data-col="orderprice" class="number">0.00</td>
                     </tr>
                 </tbody>
             </table>
@@ -505,6 +509,54 @@
     </div>
 
     <script>
+        var SPACER_COLS = ['trackingid','type','name','address','zip','city','country',
+            'invoiceid','reference','project','servicetype','vehicletype',
+            'readytime','deadlinetime','enroute','arrived','completed','signedby','deviation','ordernotes'];
+
+        var PD_SECTION_COLS = ['name','address','zip','city','country','enroute','arrived','completed'];
+
+        function getHiddenCols() {
+            var hidden = new Set();
+            document.querySelectorAll('#colMenu label[data-col]').forEach(function(label) {
+                if (!label.querySelector('input').checked) hidden.add(label.dataset.col);
+            });
+            return hidden;
+        }
+
+        function applyColumnFilter() {
+            var hidden = getHiddenCols();
+
+            document.querySelectorAll('#stops-view [data-col], #merged-view [data-col]').forEach(function(el) {
+                var col = el.dataset.col;
+                if (col === 'spacer' || col === 'pickup-section' || col === 'delivery-section') return;
+                el.style.display = hidden.has(col) ? 'none' : '';
+            });
+
+            var visibleSpacerCount = SPACER_COLS.filter(function(c) { return !hidden.has(c); }).length;
+            document.querySelectorAll('#stops-view [data-col="spacer"]').forEach(function(el) {
+                if (visibleSpacerCount === 0) { el.style.display = 'none'; }
+                else { el.style.display = ''; el.colSpan = visibleSpacerCount; }
+            });
+
+            var visiblePDCount = PD_SECTION_COLS.filter(function(c) { return !hidden.has(c); }).length;
+            document.querySelectorAll('[data-col="pickup-section"], [data-col="delivery-section"]').forEach(function(el) {
+                if (visiblePDCount === 0) { el.style.display = 'none'; }
+                else { el.style.display = ''; el.colSpan = visiblePDCount; }
+            });
+
+            var allLabels = document.querySelectorAll('#colMenu label[data-col]');
+            var allChecked = true;
+            allLabels.forEach(function(l) { if (!l.querySelector('input').checked) allChecked = false; });
+            document.querySelector('#colMenu label:first-child input').checked = allChecked;
+        }
+
+        function handleSelectAll(checkbox) {
+            document.querySelectorAll('#colMenu label[data-col] input').forEach(function(cb) {
+                cb.checked = checkbox.checked;
+            });
+            applyColumnFilter();
+        }
+
         function toggleView() {
             var merged = document.getElementById('mergeToggle').checked;
             document.getElementById('stops-view').style.display = merged ? 'none' : 'block';
@@ -513,11 +565,10 @@
             document.getElementById('entriesInfo').textContent = info;
             document.getElementById('entriesInfoBottom').textContent = info;
         }
+
         document.addEventListener('click', function(e) {
             var dropdown = document.getElementById('colFilterDropdown');
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('open');
-            }
+            if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
         });
     </script>
 </body>
