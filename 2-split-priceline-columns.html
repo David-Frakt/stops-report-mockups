@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stops Report - Split Pricelines + Totals in Group Headers</title>
+    <title>Stops Report - Split Priceline Columns</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #333; font-size: 13px; }
-        .report-container { margin: 20px 30px; max-width: 100%; overflow-x: auto; }
+        .report-container { padding: 20px 30px; max-width: 100%; overflow-x: auto; }
         h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
         .report-info { color: #888; font-size: 13px; margin-bottom: 16px; }
         .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-bottom: 12px; }
@@ -28,7 +28,10 @@
         }
         thead th.priceline-header {
             background: #dde6f5;
-            border-left: 1px solid #dee2e6;
+            border-left: 2px solid #c3d1e8;
+        }
+        thead th.priceline-header:first-of-type {
+            border-left: 3px solid #4a7dff;
         }
         tbody td {
             padding: 10px 8px;
@@ -38,33 +41,11 @@
         }
         tbody td.priceline-cell {
             border-left: 1px solid #e8ecf4;
-            border-right: 1px solid #e8ecf4;
         }
         tbody td.priceline-group-start {
-            border-left: 1px solid #f0f0f0;
-        }
-        thead th:first-child,
-        tbody td:first-child {
-            position: sticky;
-            left: 0px;
-            background-color: #f7f7f7;
-            border-right: 1px solid #f0f0f0;
-        }
-        thead th:first-child {
-            background-color: #e8ecf4;
-            z-index: 2;
-        }
-        tbody td:first-child {
-            z-index: 1;
-        }
-        tr.group-row td:first-child {
-            background-color: #2d3748;
-        }
-        tbody tr:hover td:first-child {
-            background-color: #f8f9ff;
+            border-left: 3px solid #4a7dff;
         }
         tbody tr:hover { background: #f8f9ff; }
-
         tr.group-row {
             background: #2d3748 !important;
         }
@@ -75,60 +56,6 @@
             font-size: 12px;
             border-bottom: none;
         }
-        tr.group-row .group-label {
-            white-space: nowrap;
-        }
-        tr.group-row td:has(.pill-start),
-        tr.group-row td:has(.pill-middle),
-        tr.group-row td:has(.pill-end),
-        tr.group-row td:has(.pill-solo) {
-            padding: 4px 0;
-        }
-        tr.group-row .pill-start,
-        tr.group-row .pill-middle,
-        tr.group-row .pill-end {
-            display: block;
-            background: rgba(255,255,255,0.12);
-            font-size: 11px;
-            font-weight: 400;
-            padding: 3px 0;
-            line-height: 18px;
-            white-space: nowrap;
-        }
-        tr.group-row .pill-start {
-            border-radius: 10px 0 0 10px;
-            padding-left: 10px;
-            padding-right: 4px;
-            margin-left: 2px;
-            color: #a0aec0;
-            text-align: right;
-        }
-        tr.group-row .pill-middle {
-            padding: 3px 6px;
-            color: #68d391;
-            font-weight: 600;
-            text-align: center;
-        }
-        tr.group-row .pill-end {
-            border-radius: 0 10px 10px 0;
-            padding-left: 4px;
-            padding-right: 10px;
-            margin-right: 2px;
-            color: #a0aec0;
-            font-size: 10px;
-        }
-        tr.group-row .pill-solo {
-            display: block;
-            background: rgba(255,255,255,0.12);
-            border-radius: 10px;
-            padding: 3px 10px;
-            font-size: 11px;
-            font-weight: 400;
-            line-height: 18px;
-            white-space: nowrap;
-            text-align: right;
-        }
-
         .type-badge {
             display: inline-block;
             width: 22px;
@@ -142,10 +69,10 @@
         }
         .type-P { background: #48bb78; }
         .type-D { background: #4a90d9; }
-        td.number { text-align: right; border-right: 1px solid #e8ecf4; }
+        td.number { text-align: right; }
         .mockup-badge {
             position: fixed; top: 0; left: 0; right: 0;
-            background: #63b3ed; color: #1a365d; text-align: center;
+            background: #68d391; color: #22543d; text-align: center;
             padding: 6px; font-size: 12px; font-weight: 600; z-index: 100;
         }
         .col-filter-bar {
@@ -183,7 +110,7 @@
 
         .priceline-group-header {
             text-align: center;
-            border-left: 1px solid #f0f0f0;
+            border-left: 3px solid #4a7dff;
             border-right: 1px solid #c3d1e8;
             background: #d0daf0;
             font-size: 11px;
@@ -191,7 +118,7 @@
     </style>
 </head>
 <body>
-    <div class="mockup-badge">MOCKUP 3/3 - Split Pricelines + Totals in Group Header Rows</div>
+    <div class="mockup-badge">MOCKUP 2/3 - Pricelines split into Name / Qty / Unit columns + Column Selector</div>
     <div class="report-container" style="margin-top: 32px;">
         <button class="close-btn">&times;</button>
         <h2>Report</h2>
@@ -206,7 +133,6 @@
                     <label><input type="checkbox" checked> Select All</label>
                     <div class="divider"></div>
                     <div class="section-label">General</div>
-                    <label><input type="checkbox" checked> OrderId</label>
                     <label><input type="checkbox" checked> T</label>
                     <label><input type="checkbox" checked> Name</label>
                     <label><input type="checkbox" checked> Address</label>
@@ -247,7 +173,6 @@
         <table>
             <thead>
                 <tr>
-                    <th rowspan="2">OrderId</th>
                     <th rowspan="2">T</th>
                     <th rowspan="2">Name</th>
                     <th rowspan="2">Address</th>
@@ -272,23 +197,18 @@
                     <th rowspan="2">OrderPrice</th>
                 </tr>
                 <tr>
-                    <th class="priceline-header" style="border-left: 1px solid #f0f0f0;">Name</th>
+                    <th class="priceline-header" style="border-left: 3px solid #4a7dff;">Name</th>
                     <th class="priceline-header">Qty</th>
                     <th class="priceline-header">Unit</th>
-                    <th class="priceline-header" style="border-left: 1px solid #f0f0f0;">Name</th>
+                    <th class="priceline-header" style="border-left: 3px solid #4a7dff;">Name</th>
                     <th class="priceline-header">Qty</th>
                     <th class="priceline-header">Unit</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Order 21100 - no prices -->
-                <tr class="group-row">
-                    <td colspan="27">
-                        <span class="group-label">Order 21100</span>
-                    </td>
-                </tr>
+                <!-- Order 21100 -->
+                <tr class="group-row"><td colspan="25">Order 21100</td></tr>
                 <tr>
-                    <td>21100</td>
                     <td><span class="type-badge type-P">P</span></td>
                     <td>MOWI AVD. JOSNOYA</td>
                     <td>INDUSTRIPARKVEIN</td>
@@ -317,7 +237,6 @@
                     <td class="number">0.00</td>
                 </tr>
                 <tr>
-                    <td>21100</td>
                     <td><span class="type-badge type-D">D</span></td>
                     <td>LINDUM AS</td>
                     <td>LERPEVEIEN 155</td>
@@ -346,14 +265,9 @@
                     <td class="number">0.00</td>
                 </tr>
 
-                <!-- Order 21105 - no prices -->
-                <tr class="group-row">
-                    <td colspan="27">
-                        <span class="group-label">Order 21105</span>
-                    </td>
-                </tr>
+                <!-- Order 21105 -->
+                <tr class="group-row"><td colspan="25">Order 21105</td></tr>
                 <tr>
-                    <td>21105</td>
                     <td><span class="type-badge type-P">P</span></td>
                     <td>MOWI AVD. JOSNOYA</td>
                     <td>INDUSTRIPARKVEIN</td>
@@ -382,7 +296,6 @@
                     <td class="number">0.00</td>
                 </tr>
                 <tr>
-                    <td>21105</td>
                     <td><span class="type-badge type-D">D</span></td>
                     <td>MARTIN TORELI AS</td>
                     <td>OVRE BOLLI 277</td>
@@ -411,19 +324,9 @@
                     <td class="number">0.00</td>
                 </tr>
 
-                <!-- Order 21110 - has prices with totals -->
-                <tr class="group-row">
-                    <td colspan="20"><span class="group-label">Order 21110</span></td>
-                    <td><span class="pill-start">Slakteri Slam:</span></td>
-                    <td><span class="pill-middle">32.40</span></td>
-                    <td><span class="pill-end">tonn</span></td>
-                    <td><span class="pill-start">Ventetid:</span></td>
-                    <td><span class="pill-middle">1.50</span></td>
-                    <td><span class="pill-end">timer</span></td>
-                    <td><span class="pill-solo"><span style="color: #a0aec0;">Total: </span><span style="color: #68d391; font-weight: 600;">0.00</span></span></td>
-                </tr>
+                <!-- Order 21110 -->
+                <tr class="group-row"><td colspan="25">Order 21110</td></tr>
                 <tr>
-                    <td>21110</td>
                     <td><span class="type-badge type-P">P</span></td>
                     <td>MOWI AVD. JOSNOYA</td>
                     <td>INDUSTRIPARKVEIN</td>
@@ -443,16 +346,15 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="number"></td>
+                    <td class="priceline-group-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">32.40</td>
+                    <td class="priceline-cell">tonn</td>
+                    <td class="priceline-group-start">Ventetid</td>
+                    <td class="priceline-cell number">1.50</td>
+                    <td class="priceline-cell">timer</td>
+                    <td class="number">0.00</td>
                 </tr>
                 <tr>
-                    <td>21110</td>
                     <td><span class="type-badge type-D">D</span></td>
                     <td>LINDUM AS</td>
                     <td>LERPEVEIEN 155</td>
@@ -472,28 +374,18 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="number"></td>
+                    <td class="priceline-group-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">32.40</td>
+                    <td class="priceline-cell">tonn</td>
+                    <td class="priceline-group-start">Ventetid</td>
+                    <td class="priceline-cell number">1.50</td>
+                    <td class="priceline-cell">timer</td>
+                    <td class="number">0.00</td>
                 </tr>
 
-                <!-- Order 21115 - has prices, only one priceline -->
-                <tr class="group-row">
-                    <td colspan="20"><span class="group-label">Order 21115</span></td>
-                    <td><span class="pill-start">Slakteri Slam:</span></td>
-                    <td><span class="pill-middle">31.10</span></td>
-                    <td><span class="pill-end">tonn</span></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><span class="pill-solo"><span style="color: #a0aec0;">Total: </span><span style="color: #68d391; font-weight: 600;">0.00</span></span></td>
-                </tr>
+                <!-- Order 21115 -->
+                <tr class="group-row"><td colspan="25">Order 21115</td></tr>
                 <tr>
-                    <td>21115</td>
                     <td><span class="type-badge type-P">P</span></td>
                     <td>MOWI AVD. JOSNOYA</td>
                     <td>INDUSTRIPARKVEIN</td>
@@ -513,16 +405,15 @@
                     <td>Mowi</td>
                     <td></td>
                     <td></td>
+                    <td class="priceline-group-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">31.10</td>
+                    <td class="priceline-cell">tonn</td>
                     <td class="priceline-group-start"></td>
                     <td class="priceline-cell"></td>
                     <td class="priceline-cell"></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="number"></td>
+                    <td class="number">0.00</td>
                 </tr>
                 <tr>
-                    <td>21115</td>
                     <td><span class="type-badge type-D">D</span></td>
                     <td>MARTIN TORELI AS</td>
                     <td>OVRE BOLLI 277</td>
@@ -542,13 +433,13 @@
                     <td></td>
                     <td></td>
                     <td></td>
+                    <td class="priceline-group-start">Slakteri Slam</td>
+                    <td class="priceline-cell number">31.10</td>
+                    <td class="priceline-cell">tonn</td>
                     <td class="priceline-group-start"></td>
                     <td class="priceline-cell"></td>
                     <td class="priceline-cell"></td>
-                    <td class="priceline-group-start"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="priceline-cell"></td>
-                    <td class="number"></td>
+                    <td class="number">0.00</td>
                 </tr>
             </tbody>
         </table>
