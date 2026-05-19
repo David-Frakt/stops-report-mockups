@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispatch Dashboard — Frakt24 TMS Mockup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; font-size: 13px; color: #1b2e4b; background: #f5f6fa; overflow: hidden; height: 100vh; }
+
+        /* ── Top Bar ── */
+        .topbar { height: 48px; background: #0168fa; color: #fff; display: flex; align-items: center; padding: 0 16px; gap: 16px; z-index: 100; }
+        .topbar .logo { font-weight: 700; font-size: 16px; letter-spacing: 1px; }
+        .topbar .nav-links { display: flex; gap: 4px; margin-left: 24px; }
+        .topbar .nav-links a { color: rgba(255,255,255,.7); text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .topbar .nav-links a.active { background: rgba(255,255,255,.15); color: #fff; }
+        .topbar .right-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+        .topbar .right-actions button { background: rgba(255,255,255,.15); border: none; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 500; }
+        .topbar .right-actions button:hover { background: rgba(255,255,255,.25); }
+        .topbar .right-actions button.btn-add-order { background: #10b759; }
+        .topbar .right-actions button.btn-add-order:hover { background: #0ea04f; }
+
+        /* ── Main Layout ── */
+        .dispatch-wrapper { display: flex; height: calc(100vh - 48px); }
+
+        /* ── Left: Resource Nav + Sidebar ── */
+        .resource-nav { width: 52px; min-width: 52px; background: #fff; border-right: 1px solid #e2e8f0; overflow-y: auto; padding: 8px 0; }
+        .driver-chip { width: 38px; height: 38px; margin: 4px auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; cursor: pointer; position: relative; color: #fff; transition: box-shadow .15s; }
+        .driver-chip:hover { box-shadow: 0 0 0 3px rgba(1,104,250,.3); }
+        .driver-chip.active { box-shadow: 0 0 0 3px #0168fa; }
+        .driver-chip .status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
+        .status-available { background: #10b759; }
+        .status-busy { background: #ffc107; }
+        .status-offline { background: #dc3545; }
+
+        .resource-sidebar { width: 300px; min-width: 300px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; }
+        .resource-header { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .resource-header .driver-info { display: flex; align-items: center; gap: 10px; }
+        .resource-header .avatar { width: 42px; height: 42px; border-radius: 50%; background: #5b47fb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; position: relative; }
+        .resource-header .avatar .status-dot { position: absolute; bottom: 0; right: -2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
+        .resource-header .meta { flex: 1; min-width: 0; }
+        .resource-header .meta .name { font-weight: 600; font-size: 14px; }
+        .resource-header .meta .phone { font-size: 11px; color: #8392a5; margin-top: 2px; }
+        .resource-header .vehicle-badge { display: inline-block; background: #d1fae5; color: #065f46; font-size: 10px; padding: 2px 8px; border-radius: 12px; margin-top: 6px; font-weight: 500; }
+
+        .capacity-row { display: flex; justify-content: space-between; padding: 4px 12px; font-size: 10px; }
+        .capacity-row .label { text-transform: uppercase; font-weight: 600; color: #8392a5; min-width: 75px; }
+        .capacity-row .badges { display: flex; gap: 4px; flex-wrap: wrap; }
+        .capacity-badge { background: #f1f5f9; padding: 2px 8px; border-radius: 10px; font-size: 10px; color: #475569; display: flex; align-items: center; gap: 3px; }
+
+        .resource-tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+        .resource-tabs button { flex: 1; padding: 8px 0; border: none; background: none; font-size: 11px; font-weight: 500; color: #8392a5; cursor: pointer; border-bottom: 2px solid transparent; }
+        .resource-tabs button.active { color: #0168fa; border-bottom-color: #0168fa; }
+
+        .resource-orders { flex: 1; overflow-y: auto; padding: 4px 0; }
+        .res-order-card { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .1s; }
+        .res-order-card:hover { background: #f8fafc; }
+        .res-order-card .oid { font-weight: 600; color: #0168fa; font-size: 12px; }
+        .res-order-card .addr { font-size: 11px; color: #64748b; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .res-order-card .addr i { font-size: 9px; }
+        .res-order-card .time-badges { display: flex; gap: 4px; margin-top: 4px; }
+        .time-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+        .time-badge.pickup { background: #dbeafe; color: #1e40af; }
+        .time-badge.deliver { background: #fef3c7; color: #92400e; }
+
+        .resource-footer { padding: 8px 12px; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; align-items: center; }
+        .resource-footer button { background: #f1f5f9; border: none; padding: 6px; border-radius: 4px; cursor: pointer; color: #64748b; }
+        .resource-footer button:hover { background: #e2e8f0; }
+
+        /* ── Center: Order List ── */
+        .order-list-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+        .order-tabs-bar { display: flex; align-items: center; background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 12px; gap: 0; min-height: 40px; }
+        .order-tab { padding: 10px 14px; font-size: 12px; font-weight: 500; color: #8392a5; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+        .order-tab.active { color: #0168fa; border-bottom-color: #0168fa; }
+        .order-tab .badge { background: #0168fa; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+        .order-tab-add { color: #8392a5; font-size: 12px; cursor: pointer; margin-left: 8px; }
+        .tab-spacer { flex: 1; }
+        .view-toggles { display: flex; gap: 2px; margin-left: 8px; }
+        .view-toggles button { background: none; border: 1px solid #e2e8f0; padding: 6px 10px; cursor: pointer; color: #8392a5; font-size: 12px; }
+        .view-toggles button.active { background: #0168fa; color: #fff; border-color: #0168fa; }
+        .view-toggles button:first-child { border-radius: 4px 0 0 4px; }
+        .view-toggles button:last-child { border-radius: 0 4px 4px 0; }
+        .settings-btn { background: none; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 4px; cursor: pointer; color: #8392a5; font-size: 14px; margin-left: 6px; }
+
+        .order-table-container { flex: 1; overflow: auto; background: #f5f6fa; }
+        table.order-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
+        table.order-table thead th { position: sticky; top: 0; background: #f8fafc; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #8392a5; font-weight: 600; border-bottom: 2px solid #e2e8f0; white-space: nowrap; z-index: 2; }
+        table.order-table tbody td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap; }
+        table.order-table tbody tr { cursor: pointer; transition: background .1s; }
+        table.order-table tbody tr:hover { background: #f0f7ff; }
+        table.order-table tbody tr.selected { background: #dbeafe; }
+        .oid-link { color: #0168fa; font-weight: 600; text-decoration: none; }
+        .icon-cell { text-align: center; }
+        .icon-cell i { font-size: 13px; }
+        .type-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+        .type-P { background: #dbeafe; color: #1e40af; }
+        .type-D { background: #fef3c7; color: #92400e; }
+        .type-PD { background: #ede9fe; color: #5b21b6; }
+        .zone-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 500; }
+        .adr-icon { color: #ef4444; font-size: 10px; }
+        .addr-cell { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+        .goods-cell { font-size: 11px; color: #64748b; }
+
+        .order-footer { display: flex; align-items: center; padding: 8px 12px; background: #fff; border-top: 1px solid #e2e8f0; gap: 8px; min-height: 48px; }
+        .order-footer label { font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .order-footer .actions { display: flex; gap: 6px; }
+        .order-footer .actions button { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 5px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; color: #475569; }
+        .order-footer .actions button:hover { background: #e2e8f0; }
+        .order-footer .pagination { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+        .order-footer .pagination button { background: #f1f5f9; border: 1px solid #e2e8f0; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+        .order-footer .pagination button.active { background: #0168fa; color: #fff; border-color: #0168fa; }
+        .order-footer .pagination .info { font-size: 11px; color: #8392a5; }
+
+        /* ── Right: Map ── */
+        .map-sidebar { width: 380px; min-width: 300px; border-left: 1px solid #e2e8f0; position: relative; }
+        #map { width: 100%; height: 100%; }
+
+        /* ── Off-canvas Modal: Create New Order ── */
+        .offcanvas-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; display: none; opacity: 0; transition: opacity .25s; }
+        .offcanvas-overlay.show { display: block; opacity: 1; }
+        .offcanvas-panel { position: fixed; top: 0; right: -780px; width: 780px; height: 100vh; background: #fff; z-index: 1001; display: flex; transition: right .3s ease; box-shadow: -4px 0 20px rgba(0,0,0,.15); }
+        .offcanvas-panel.show { right: 0; }
+
+        .offcanvas-form-side { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .offcanvas-header { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+        .offcanvas-header h5 { font-size: 16px; font-weight: 600; }
+        .offcanvas-header .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8392a5; padding: 4px; }
+        .offcanvas-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .offcanvas-footer { padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end; }
+        .offcanvas-footer button { padding: 8px 20px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #e2e8f0; }
+        .offcanvas-footer .btn-cancel { background: #fff; color: #64748b; }
+        .offcanvas-footer .btn-save { background: #0168fa; color: #fff; border-color: #0168fa; }
+        .offcanvas-footer .btn-save:hover { background: #0155d4; }
+
+        .offcanvas-map-side { width: 340px; min-width: 340px; border-left: 1px solid #e2e8f0; background: #f5f6fa; }
+        #modal-map { width: 100%; height: 100%; }
+
+        /* ── Form styles ── */
+        .form-section { margin-bottom: 20px; }
+        .form-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #8392a5; font-weight: 600; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; }
+        .form-group label { font-size: 11px; color: #64748b; margin-bottom: 3px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; font-family: inherit; outline: none; transition: border-color .15s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0168fa; box-shadow: 0 0 0 3px rgba(1,104,250,.1); }
+        .form-group textarea { resize: vertical; min-height: 50px; }
+
+        .address-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+        .address-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .address-card-header .tag { font-size: 10px; text-transform: uppercase; font-weight: 700; padding: 2px 8px; border-radius: 3px; }
+        .address-card-header .tag.pickup { background: #dbeafe; color: #1e40af; }
+        .address-card-header .tag.deliver { background: #fef3c7; color: #92400e; }
+        .address-card-header button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; }
+
+        .goods-line { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
+        .goods-line:last-child { border-bottom: none; }
+        .btn-add-line { background: none; border: 1px dashed #94a3b8; color: #64748b; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; width: 100%; margin-top: 6px; }
+        .btn-add-line:hover { border-color: #0168fa; color: #0168fa; }
+
+        /* ── Filter panel (search) ── */
+        .search-toggle { display: none; width: 260px; min-width: 260px; background: #fff; border-right: 1px solid #e2e8f0; padding: 12px; overflow-y: auto; flex-direction: column; }
+        .search-toggle.show { display: flex; }
+        .search-toggle h6 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #8392a5; font-weight: 600; margin-bottom: 8px; margin-top: 12px; }
+        .search-toggle .form-group { margin-bottom: 8px; }
+        .search-toggle .btn-search { width: 100%; padding: 8px; background: #10b759; color: #fff; border: none; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; margin-top: 10px; }
+
+        /* ── Responsive ── */
+        @media (max-width: 1200px) {
+            .map-sidebar { width: 280px; min-width: 200px; }
+            .resource-sidebar { width: 240px; min-width: 240px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ TOP BAR ═══════════════════ -->
+<div class="topbar">
+    <div class="logo">FRAKT24</div>
+    <div class="nav-links">
+        <a href="#" class="active">Dispatch</a>
+        <a href="#">Orders</a>
+        <a href="#">Resources</a>
+        <a href="#">Reports</a>
+        <a href="#">Settings</a>
+    </div>
+    <div class="right-actions">
+        <button class="btn-add-order" onclick="openAddOrder()"><i class="fas fa-plus"></i> Create new order</button>
+        <button><i class="fas fa-bell"></i></button>
+        <button><i class="fas fa-user"></i> Admin</button>
+    </div>
+</div>
+
+<!-- ═══════════════════ MAIN LAYOUT ═══════════════════ -->
+<div class="dispatch-wrapper">
+
+    <!-- ── Resource Nav (driver chips) ── -->
+    <div class="resource-nav" id="driverNav"></div>
+
+    <!-- ── Resource Sidebar ── -->
+    <div class="resource-sidebar">
+        <div class="resource-header" id="resourceHeader">
+            <div class="driver-info">
+                <div class="avatar" id="resAvatar">OL<span class="status-dot status-available"></span></div>
+                <div class="meta">
+                    <div class="name" id="resName">Ole Larsen</div>
+                    <div class="phone"><i class="fas fa-phone"></i> +47 912 34 567 &nbsp; <i class="fas fa-satellite-dish"></i> App</div>
+                </div>
+                <div style="display:flex; gap:4px;">
+                    <button style="background:none;border:none;cursor:pointer;color:#8392a5;font-size:16px;" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button style="background:none;border:none;cursor:pointer;color:#8392a5;font-size:16px;" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="vehicle-badge"><i class="fas fa-truck"></i> Volvo FH16 — Cap: 24t / 86m³</div>
+            <div class="capacity-row" style="margin-top:8px;">
+                <span class="label">Not loaded:</span>
+                <div class="badges">
+                    <span class="capacity-badge"><i class="fas fa-dolly"></i> 4</span>
+                    <span class="capacity-badge"><i class="fas fa-weight-hanging"></i> 1200 kg</span>
+                    <span class="capacity-badge"><i class="fas fa-ruler-combined"></i> 12 m³</span>
+                    <span class="capacity-badge"><i class="fas fa-pallet"></i> 6</span>
+                </div>
+            </div>
+            <div class="capacity-row">
+                <span class="label">Loaded:</span>
+                <div class="badges">
+                    <span class="capacity-badge"><i class="fas fa-dolly"></i> 8</span>
+                    <span class="capacity-badge"><i class="fas fa-weight-hanging"></i> 4800 kg</span>
+                    <span class="capacity-badge"><i class="fas fa-ruler-combined"></i> 38 m³</span>
+                    <span class="capacity-badge"><i class="fas fa-pallet"></i> 12</span>
+                </div>
+            </div>
+        </div>
+        <div class="resource-tabs">
+            <button class="active">Orders</button>
+            <button>Status</button>
+            <button>Routes</button>
+            <button>Msg</button>
+            <button>Info</button>
+            <button>Time</button>
+        </div>
+        <div class="resource-orders" id="resourceOrders"></div>
+        <div class="resource-footer">
+            <button title="Select all"><i class="fas fa-check-square"></i></button>
+            <button title="Withdraw"><i class="fas fa-undo"></i></button>
+            <button title="Refresh"><i class="fas fa-sync-alt"></i></button>
+            <span style="margin-left:auto;font-size:11px;color:#8392a5;">6 orders</span>
+        </div>
+    </div>
+
+    <!-- ── Search Filter Panel ── -->
+    <div class="search-toggle" id="searchPanel">
+        <h6 style="margin-top:0;">Search Orders</h6>
+        <div class="form-group">
+            <label>Order ID</label>
+            <input type="text" placeholder="e.g. 10524">
+        </div>
+        <div class="form-group">
+            <label>Reference</label>
+            <input type="text" placeholder="REF...">
+        </div>
+        <div class="form-group">
+            <label>Customer</label>
+            <input type="text" placeholder="Company name">
+        </div>
+        <div class="form-group">
+            <label>Display assigned</label>
+            <select>
+                <option>Only unassigned</option>
+                <option>All</option>
+                <option>Only assigned</option>
+            </select>
+        </div>
+        <h6>Address</h6>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text">
+        </div>
+        <div class="form-group">
+            <label>Zip</label>
+            <input type="text">
+        </div>
+        <div class="form-group">
+            <label>City</label>
+            <input type="text">
+        </div>
+        <h6>Display options</h6>
+        <div class="form-group">
+            <label>Parked orders</label>
+            <select><option>Yes</option><option>No</option><option>Only parked</option></select>
+        </div>
+        <div class="form-group">
+            <label>Finished orders</label>
+            <select><option>No</option><option>Yes</option><option>Only</option></select>
+        </div>
+        <div class="form-group">
+            <label>Sort by</label>
+            <select>
+                <option>OID</option>
+                <option>Pickup after</option>
+                <option>Deliver before</option>
+                <option>Customer</option>
+                <option>Reference</option>
+            </select>
+        </div>
+        <button class="btn-search" onclick="toggleSearch()"><i class="fas fa-search"></i> Search</button>
+    </div>
+
+    <!-- ── Center: Order List ── -->
+    <div class="order-list-wrapper">
+        <div class="order-tabs-bar">
+            <div class="order-tab active">All unassigned orders <span class="badge">24</span></div>
+            <div class="order-tab">Oslo Express <span class="badge" style="background:#f59e0b;">8</span></div>
+            <div class="order-tab">Bergen Priority</div>
+            <div class="order-tab">Trondheim</div>
+            <span class="order-tab-add"><i class="fas fa-plus"></i> Add view</span>
+            <span class="tab-spacer"></span>
+            <div class="view-toggles">
+                <button class="active" title="List view"><i class="fas fa-th-list"></i></button>
+                <button title="Vehicle calendar"><i class="fas fa-truck"></i></button>
+                <button title="Resource calendar"><i class="fas fa-user-clock"></i></button>
+                <button title="Terminal"><i class="fas fa-warehouse"></i></button>
+            </div>
+            <button class="settings-btn" title="Dispatch settings"><i class="fas fa-cog"></i></button>
+            <button class="settings-btn" title="Search" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="order-table-container">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px;"><input type="checkbox" id="selectAll"></th>
+                        <th>OID</th>
+                        <th class="icon-cell">A</th>
+                        <th class="icon-cell">V</th>
+                        <th class="icon-cell">S</th>
+                        <th>T</th>
+                        <th>P AFTER</th>
+                        <th>D BEFORE</th>
+                        <th>REF</th>
+                        <th>CUSTOMER</th>
+                        <th>AQ</th>
+                        <th>P ZONE</th>
+                        <th>P NAME</th>
+                        <th>P ZIP</th>
+                        <th>P CITY</th>
+                        <th>D ZONE</th>
+                        <th>D NAME</th>
+                        <th>D ZIP</th>
+                        <th>D CITY</th>
+                        <th>QTY</th>
+                        <th>KG</th>
+                        <th>M³</th>
+                        <th>KM</th>
+                        <th>TIME</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="order-footer">
+            <label><input type="checkbox"> Select all</label>
+            <div class="actions">
+                <button><i class="fas fa-route"></i> Assign to route</button>
+                <button><i class="fas fa-undo"></i> Withdraw</button>
+                <button><i class="fas fa-map-marker-alt"></i> Geocode</button>
+                <button><i class="fas fa-object-group"></i> Merge</button>
+            </div>
+            <div class="pagination">
+                <span class="info">Showing 1-25 of 24</span>
+                <button class="active">1</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Right: Map Sidebar ── -->
+    <div class="map-sidebar">
+        <div id="map"></div>
+    </div>
+
+</div>
+
+<!-- ═══════════════════ OFF-CANVAS: CREATE NEW ORDER ═══════════════════ -->
+<div class="offcanvas-overlay" id="offcanvasOverlay" onclick="closeAddOrder()"></div>
+<div class="offcanvas-panel" id="offcanvasPanel">
+    <div class="offcanvas-form-side">
+        <div class="offcanvas-header">
+            <h5>Create new order</h5>
+            <button class="close-btn" onclick="closeAddOrder()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Order Details -->
+            <div class="form-section">
+                <div class="form-section-title">Order Details</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer *</label>
+                        <select>
+                            <option value="">Select customer...</option>
+                            <option>Nordic Logistics AS</option>
+                            <option>Scandinavian Transport AB</option>
+                            <option>Oslo Freight Co.</option>
+                            <option>Bergen Shipping AS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Reference</label>
+                        <input type="text" placeholder="REF-2024-...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vehicle type *</label>
+                        <select>
+                            <option>Small van</option>
+                            <option selected>Large van</option>
+                            <option>Truck</option>
+                            <option>Semi-trailer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Service type *</label>
+                        <select>
+                            <option>Standard</option>
+                            <option>Express</option>
+                            <option>Same day</option>
+                            <option>Overnight</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Order type</label>
+                        <select>
+                            <option>Pickup & Delivery</option>
+                            <option>Pickup only</option>
+                            <option>Delivery only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pickup after</label>
+                        <input type="datetime-local" value="2026-05-19T08:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Deliver before</label>
+                        <input type="datetime-local" value="2026-05-19T16:00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Addresses -->
+            <div class="form-section">
+                <div class="form-section-title">Addresses</div>
+
+                <div class="address-card">
+                    <div class="address-card-header">
+                        <span class="tag pickup"><i class="fas fa-arrow-up"></i> Pickup</span>
+                        <button title="Remove"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" placeholder="Company / Contact name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label>Address</label>
+                            <input type="text" placeholder="Street and number">
+                        </div>
+                        <div class="form-group">
+                            <label>Zip</label>
+                            <input type="text" placeholder="0001">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <select><option>Norway</option><option>Sweden</option><option>Denmark</option><option>Finland</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact person</label>
+                            <input type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" placeholder="+47">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Instructions</label>
+                            <textarea placeholder="Special instructions for pickup..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="address-card">
+                    <div class="address-card-header">
+                        <span class="tag deliver"><i class="fas fa-arrow-down"></i> Delivery</span>
+                        <button title="Remove"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" placeholder="Company / Contact name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;">
+                            <label>Address</label>
+                            <input type="text" placeholder="Street and number">
+                        </div>
+                        <div class="form-group">
+                            <label>Zip</label>
+                            <input type="text" placeholder="0001">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <select><option>Norway</option><option>Sweden</option><option>Denmark</option><option>Finland</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact person</label>
+                            <input type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" placeholder="+47">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Instructions</label>
+                            <textarea placeholder="Special instructions for delivery..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-add-line"><i class="fas fa-plus"></i> Add address</button>
+            </div>
+
+            <!-- Goods -->
+            <div class="form-section">
+                <div class="form-section-title">Goods</div>
+                <div class="goods-line">
+                    <div class="form-group" style="flex:2;">
+                        <label>Description</label>
+                        <input type="text" placeholder="Goods description">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select><option>Pallet</option><option>Package</option><option>Bulk</option><option>Container</option></select>
+                    </div>
+                    <div class="form-group" style="flex:.6;">
+                        <label>Qty</label>
+                        <input type="number" value="1">
+                    </div>
+                    <div class="form-group" style="flex:.6;">
+                        <label>Weight (kg)</label>
+                        <input type="number" placeholder="0">
+                    </div>
+                    <div class="form-group" style="flex:.6;">
+                        <label>Volume (m³)</label>
+                        <input type="number" placeholder="0">
+                    </div>
+                    <button style="background:none;border:none;color:#94a3b8;cursor:pointer;margin-top:18px;font-size:14px;" title="Remove line"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <button class="btn-add-line"><i class="fas fa-plus"></i> Add goods line</button>
+            </div>
+
+            <!-- Internal Notes -->
+            <div class="form-section">
+                <div class="form-section-title">Internal Notes</div>
+                <div class="form-group">
+                    <textarea placeholder="Internal notes (not visible to customer)..." rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="offcanvas-footer">
+            <button class="btn-cancel" onclick="closeAddOrder()">Cancel</button>
+            <button class="btn-save" onclick="closeAddOrder()"><i class="fas fa-save"></i> Save order</button>
+        </div>
+    </div>
+    <div class="offcanvas-map-side">
+        <div id="modal-map"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── Hardcoded Data ──
+const drivers = [
+    { id: 1, name: 'Ole Larsen', initials: 'OL', color: '#5b47fb', status: 'available', phone: '+47 912 34 567' },
+    { id: 2, name: 'Kari Nordström', initials: 'KN', color: '#0168fa', status: 'busy', phone: '+47 923 45 678' },
+    { id: 3, name: 'Erik Hansen', initials: 'EH', color: '#e74c3c', status: 'available', phone: '+47 934 56 789' },
+    { id: 4, name: 'Ingrid Berg', initials: 'IB', color: '#10b759', status: 'offline', phone: '+47 945 67 890' },
+    { id: 5, name: 'Lars Svensson', initials: 'LS', color: '#f59e0b', status: 'available', phone: '+47 956 78 901' },
+    { id: 6, name: 'Anna Johansen', initials: 'AJ', color: '#ec4899', status: 'busy', phone: '+47 967 89 012' },
+    { id: 7, name: 'Magnus Vik', initials: 'MV', color: '#14b8a6', status: 'available', phone: '+47 978 90 123' },
+    { id: 8, name: 'Sofie Dahl', initials: 'SD', color: '#8b5cf6', status: 'offline', phone: '+47 989 01 234' },
+];
+
+const resourceOrders = [
+    { oid: 10501, from: 'Aker Brygge, Oslo', to: 'Majorstuen, Oslo', pAfter: '08:00', dBefore: '10:30' },
+    { oid: 10504, from: 'Grünerløkka, Oslo', to: 'Sandvika', pAfter: '09:15', dBefore: '11:00' },
+    { oid: 10512, from: 'Lillestrøm', to: 'Ski', pAfter: '10:30', dBefore: '13:00' },
+    { oid: 10518, from: 'Drammen', to: 'Tønsberg', pAfter: '12:00', dBefore: '15:00' },
+    { oid: 10523, from: 'Asker', to: 'Bærum', pAfter: '13:30', dBefore: '15:30' },
+    { oid: 10529, from: 'Fredrikstad', to: 'Sarpsborg', pAfter: '14:00', dBefore: '16:30' },
+];
+
+const orders = [
+    { oid: 10501, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'PD', pAfter: '08:00', dBefore: '10:30', ref: 'REF-4821', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Oslo Ø', pName: 'Aker Brygge Warehouse', pZip: '0252', pCity: 'Oslo', dZone: 'Oslo V', dName: 'Majorstuen Hub', dZip: '0305', dCity: 'Oslo', qty: 4, kg: 280, vol: 2.1, km: 12, time: '25m', zoneColor: '#dbeafe' },
+    { oid: 10502, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'PD', pAfter: '07:30', dBefore: '12:00', ref: 'REF-4822', customer: 'Scandinavian Transport', aq: 3, pZone: 'Bergen', pName: 'Flesland Terminal', pZip: '5258', pCity: 'Bergen', dZone: 'Stavanger', dName: 'Forus Depot', dZip: '4033', dCity: 'Stavanger', qty: 12, kg: 4200, vol: 18.5, km: 210, time: '3h 15m', zoneColor: '#fef3c7' },
+    { oid: 10503, assigned: null, vehicle: 'fa-truck-moving', service: 'fa-bolt', type: 'D', pAfter: '09:00', dBefore: '14:00', ref: 'REF-4823', customer: 'Oslo Freight Co.', aq: 1, pZone: 'Oslo S', pName: 'Alnabru Terminal', pZip: '0614', pCity: 'Oslo', dZone: 'Drammen', dName: 'Drammen Warehouse', dZip: '3044', dCity: 'Drammen', qty: 8, kg: 1500, vol: 8.2, km: 45, time: '50m', zoneColor: '#ede9fe' },
+    { oid: 10504, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '09:15', dBefore: '11:00', ref: 'REF-4824', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Oslo Ø', pName: 'Grünerløkka', pZip: '0555', pCity: 'Oslo', dZone: 'Akershus', dName: 'Sandvika Center', dZip: '1337', dCity: 'Sandvika', qty: 2, kg: 120, vol: 0.8, km: 18, time: '30m', zoneColor: '#dbeafe' },
+    { oid: 10505, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'P', pAfter: '10:00', dBefore: '16:00', ref: 'REF-4825', customer: 'Bergen Shipping AS', aq: 4, pZone: 'Trondheim', pName: 'Brattøra Port', pZip: '7010', pCity: 'Trondheim', dZone: 'Trondheim', dName: 'Heimdal Depot', dZip: '7080', dCity: 'Heimdal', qty: 20, kg: 8400, vol: 42.0, km: 15, time: '20m', zoneColor: '#d1fae5' },
+    { oid: 10506, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'PD', pAfter: '08:30', dBefore: '11:30', ref: 'REF-4826', customer: 'Scandinavian Transport', aq: 2, pZone: 'Oslo N', pName: 'Nydalen Office', pZip: '0484', pCity: 'Oslo', dZone: 'Oslo S', dName: 'Bjørvika Tower', dZip: '0150', dCity: 'Oslo', qty: 1, kg: 45, vol: 0.3, km: 8, time: '18m', zoneColor: '#fce7f3' },
+    { oid: 10507, assigned: null, vehicle: 'fa-truck-moving', service: 'fa-clock', type: 'PD', pAfter: '06:00', dBefore: '18:00', ref: 'REF-4827', customer: 'Oslo Freight Co.', aq: 6, pZone: 'Kristiansand', pName: 'Sørlandsparken', pZip: '4636', pCity: 'Kristiansand', dZone: 'Oslo', dName: 'Alnabru Terminal', dZip: '0614', dCity: 'Oslo', qty: 24, kg: 12000, vol: 65.0, km: 320, time: '4h 30m', zoneColor: '#ffedd5' },
+    { oid: 10508, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'D', pAfter: '11:00', dBefore: '13:00', ref: 'REF-4828', customer: 'Nordic Logistics AS', aq: 1, pZone: 'Akershus', pName: 'Lørenskog Dist.', pZip: '1473', pCity: 'Lørenskog', dZone: 'Oslo Ø', dName: 'Tøyen', dZip: '0577', dCity: 'Oslo', qty: 3, kg: 200, vol: 1.5, km: 14, time: '22m', zoneColor: '#dbeafe' },
+    { oid: 10509, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'PD', pAfter: '07:00', dBefore: '15:00', ref: 'REF-4829', customer: 'Bergen Shipping AS', aq: 3, pZone: 'Tromsø', pName: 'Tromsø Havn', pZip: '9008', pCity: 'Tromsø', dZone: 'Bodø', dName: 'Bodø Terminal', dZip: '8006', dCity: 'Bodø', qty: 15, kg: 6200, vol: 34.0, km: 595, time: '8h 10m', zoneColor: '#e0e7ff' },
+    { oid: 10510, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '09:30', dBefore: '12:30', ref: 'REF-4830', customer: 'Scandinavian Transport', aq: 2, pZone: 'Oslo V', pName: 'Skøyen', pZip: '0276', pCity: 'Oslo', dZone: 'Asker', dName: 'Asker Sentrum', dZip: '1384', dCity: 'Asker', qty: 5, kg: 320, vol: 2.8, km: 22, time: '35m', zoneColor: '#fef3c7' },
+    { oid: 10511, assigned: null, vehicle: 'fa-truck', service: 'fa-bolt', type: 'PD', pAfter: '08:00', dBefore: '17:00', ref: 'REF-4831', customer: 'Oslo Freight Co.', aq: 5, pZone: 'Fredrikstad', pName: 'Fredrikstad Kai', pZip: '1632', pCity: 'Fredrikstad', dZone: 'Halden', dName: 'Halden Depot', dZip: '1771', dCity: 'Halden', qty: 10, kg: 3800, vol: 22.0, km: 35, time: '40m', zoneColor: '#d1fae5' },
+    { oid: 10512, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '10:30', dBefore: '13:00', ref: 'REF-4832', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Akershus', pName: 'Lillestrøm', pZip: '2003', pCity: 'Lillestrøm', dZone: 'Follo', dName: 'Ski Terminal', dZip: '1400', dCity: 'Ski', qty: 6, kg: 450, vol: 3.2, km: 28, time: '38m', zoneColor: '#dbeafe' },
+];
+
+// ── Render Driver Nav ──
+function renderDriverNav() {
+    const nav = document.getElementById('driverNav');
+    nav.innerHTML = drivers.map((d, i) => `
+        <div class="driver-chip ${i === 0 ? 'active' : ''}" style="background:${d.color};" onclick="selectDriver(${d.id})" title="${d.name}">
+            ${d.initials}
+            <span class="status-dot status-${d.status}"></span>
+        </div>
+    `).join('');
+}
+
+function selectDriver(id) {
+    document.querySelectorAll('.driver-chip').forEach(c => c.classList.remove('active'));
+    const d = drivers.find(d => d.id === id);
+    event.currentTarget.classList.add('active');
+    document.getElementById('resAvatar').innerHTML = d.initials + `<span class="status-dot status-${d.status}"></span>`;
+    document.getElementById('resAvatar').style.background = d.color;
+    document.getElementById('resName').textContent = d.name;
+}
+
+// ── Render Resource Orders ──
+function renderResourceOrders() {
+    const container = document.getElementById('resourceOrders');
+    container.innerHTML = resourceOrders.map(o => `
+        <div class="res-order-card">
+            <div class="oid">#${o.oid}</div>
+            <div class="addr"><i class="fas fa-arrow-up" style="color:#1e40af;"></i> ${o.from}</div>
+            <div class="addr"><i class="fas fa-arrow-down" style="color:#92400e;"></i> ${o.to}</div>
+            <div class="time-badges">
+                <span class="time-badge pickup"><i class="fas fa-clock"></i> P: ${o.pAfter}</span>
+                <span class="time-badge deliver"><i class="fas fa-flag-checkered"></i> D: ${o.dBefore}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ── Render Order Table ──
+function renderOrderTable() {
+    const tbody = document.getElementById('orderTableBody');
+    tbody.innerHTML = orders.map(o => `
+        <tr>
+            <td><input type="checkbox"></td>
+            <td><a class="oid-link" href="#">${o.oid}</a></td>
+            <td class="icon-cell">${o.assigned ? '<i class="fas fa-check-circle" style="color:#10b759;"></i>' : '<i class="far fa-circle" style="color:#d1d5db;"></i>'}</td>
+            <td class="icon-cell"><i class="fas ${o.vehicle}" style="color:#6366f1;"></i></td>
+            <td class="icon-cell"><i class="fas ${o.service}" style="color:#f59e0b;"></i></td>
+            <td><span class="type-badge type-${o.type}">${o.type}</span></td>
+            <td>${o.pAfter}</td>
+            <td>${o.dBefore}</td>
+            <td style="color:#64748b;">${o.ref}</td>
+            <td>${o.customer}</td>
+            <td style="text-align:center;">${o.aq}</td>
+            <td><span class="zone-badge" style="background:${o.zoneColor};">${o.pZone}</span></td>
+            <td class="addr-cell">${o.pName}</td>
+            <td>${o.pZip}</td>
+            <td>${o.pCity}</td>
+            <td><span class="zone-badge" style="background:${o.zoneColor};">${o.dZone}</span></td>
+            <td class="addr-cell">${o.dName}</td>
+            <td>${o.dZip}</td>
+            <td>${o.dCity}</td>
+            <td style="text-align:right;">${o.qty}</td>
+            <td style="text-align:right;">${o.kg.toLocaleString()}</td>
+            <td style="text-align:right;">${o.vol}</td>
+            <td style="text-align:right;">${o.km}</td>
+            <td>${o.time}</td>
+        </tr>
+    `).join('');
+}
+
+// ── Map ──
+let mainMap, modalMap;
+function initMainMap() {
+    mainMap = L.map('map').setView([59.91, 10.75], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(mainMap);
+
+    // Driver markers
+    const driverPositions = [
+        [59.912, 10.734], [59.927, 10.758], [59.895, 10.775],
+        [59.940, 10.712], [59.905, 10.690], [59.918, 10.810],
+    ];
+    driverPositions.forEach((pos, i) => {
+        const d = drivers[i];
+        if (!d) return;
+        L.circleMarker(pos, { radius: 8, fillColor: d.color, color: '#fff', weight: 2, fillOpacity: 1 })
+            .addTo(mainMap)
+            .bindPopup(`<b>${d.name}</b><br>${d.status}`);
+    });
+
+    // Order markers
+    const orderPositions = [
+        [59.912, 10.720], [59.935, 10.695], [59.928, 10.780],
+        [59.900, 10.745], [59.945, 10.760], [59.890, 10.710],
+        [59.908, 10.800], [59.920, 10.670],
+    ];
+    orderPositions.forEach((pos, i) => {
+        L.marker(pos).addTo(mainMap).bindPopup(`Order #${10501 + i}`);
+    });
+}
+
+function initModalMap() {
+    modalMap = L.map('modal-map').setView([59.91, 10.75], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(modalMap);
+}
+
+// ── Off-canvas ──
+function openAddOrder() {
+    document.getElementById('offcanvasOverlay').classList.add('show');
+    document.getElementById('offcanvasPanel').classList.add('show');
+    setTimeout(() => {
+        if (!modalMap) {
+            initModalMap();
+        } else {
+            modalMap.invalidateSize();
+        }
+    }, 350);
+}
+
+function closeAddOrder() {
+    document.getElementById('offcanvasOverlay').classList.remove('show');
+    document.getElementById('offcanvasPanel').classList.remove('show');
+}
+
+// ── Search Panel ──
+function toggleSearch() {
+    document.getElementById('searchPanel').classList.toggle('show');
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+    renderDriverNav();
+    renderResourceOrders();
+    renderOrderTable();
+    initMainMap();
+});
+</script>
+</body>
+</html>
