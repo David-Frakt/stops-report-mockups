@@ -6,6 +6,7 @@
     <title>Dispatch Dashboard — Frakt24 TMS Mockup</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; font-size: 13px; color: #1b2e4b; background: #f5f6fa; overflow: hidden; height: 100vh; }
@@ -21,6 +22,17 @@
         .topbar .right-actions button:hover { background: rgba(255,255,255,.25); }
         .topbar .right-actions button.btn-add-order { background: #10b759; }
         .topbar .right-actions button.btn-add-order:hover { background: #0ea04f; }
+
+        /* ── Tour Launcher ── */
+        .tour-launcher { position: fixed; bottom: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+        .tour-launcher .tour-toggle { background: #0168fa; color: #fff; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer; box-shadow: 0 4px 12px rgba(1,104,250,.4); transition: transform .15s; }
+        .tour-launcher .tour-toggle:hover { transform: scale(1.1); }
+        .tour-menu { display: none; background: #fff; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.15); padding: 8px 0; min-width: 240px; }
+        .tour-menu.show { display: block; }
+        .tour-menu-header { padding: 10px 16px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #8392a5; font-weight: 600; }
+        .tour-menu a { display: flex; align-items: center; gap: 10px; padding: 8px 16px; text-decoration: none; color: #1b2e4b; font-size: 13px; transition: background .1s; }
+        .tour-menu a:hover { background: #f0f7ff; }
+        .tour-menu a i { width: 20px; text-align: center; color: #0168fa; }
 
         /* ── Main Layout ── */
         .dispatch-wrapper { display: flex; height: calc(100vh - 48px); }
@@ -38,7 +50,7 @@
         .resource-sidebar { width: 300px; min-width: 300px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; }
         .resource-header { padding: 12px; border-bottom: 1px solid #e2e8f0; }
         .resource-header .driver-info { display: flex; align-items: center; gap: 10px; }
-        .resource-header .avatar { width: 42px; height: 42px; border-radius: 50%; background: #5b47fb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; position: relative; }
+        .resource-header .avatar { width: 42px; height: 42px; border-radius: 50%; background: #5b47fb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; position: relative; flex-shrink: 0; }
         .resource-header .avatar .status-dot { position: absolute; bottom: 0; right: -2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
         .resource-header .meta { flex: 1; min-width: 0; }
         .resource-header .meta .name { font-weight: 600; font-size: 14px; }
@@ -100,9 +112,7 @@
         .type-D { background: #fef3c7; color: #92400e; }
         .type-PD { background: #ede9fe; color: #5b21b6; }
         .zone-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 500; }
-        .adr-icon { color: #ef4444; font-size: 10px; }
         .addr-cell { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-        .goods-cell { font-size: 11px; color: #64748b; }
 
         .order-footer { display: flex; align-items: center; padding: 8px 12px; background: #fff; border-top: 1px solid #e2e8f0; gap: 8px; min-height: 48px; }
         .order-footer label { font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
@@ -121,65 +131,131 @@
         /* ── Off-canvas Modal: Create New Order ── */
         .offcanvas-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; display: none; opacity: 0; transition: opacity .25s; }
         .offcanvas-overlay.show { display: block; opacity: 1; }
-        .offcanvas-panel { position: fixed; top: 0; right: -780px; width: 780px; height: 100vh; background: #fff; z-index: 1001; display: flex; transition: right .3s ease; box-shadow: -4px 0 20px rgba(0,0,0,.15); }
+        .offcanvas-panel { position: fixed; top: 0; right: -820px; width: 820px; height: 100vh; background: #fff; z-index: 1001; display: flex; transition: right .3s ease; box-shadow: -4px 0 20px rgba(0,0,0,.15); }
         .offcanvas-panel.show { right: 0; }
 
         .offcanvas-form-side { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .offcanvas-header { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
         .offcanvas-header h5 { font-size: 16px; font-weight: 600; }
         .offcanvas-header .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #8392a5; padding: 4px; }
-        .offcanvas-body { flex: 1; overflow-y: auto; padding: 20px; }
-        .offcanvas-footer { padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end; }
-        .offcanvas-footer button { padding: 8px 20px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #e2e8f0; }
-        .offcanvas-footer .btn-cancel { background: #fff; color: #64748b; }
-        .offcanvas-footer .btn-save { background: #0168fa; color: #fff; border-color: #0168fa; }
-        .offcanvas-footer .btn-save:hover { background: #0155d4; }
+        .offcanvas-body { flex: 1; overflow-y: auto; padding: 0; }
 
-        .offcanvas-map-side { width: 340px; min-width: 340px; border-left: 1px solid #e2e8f0; background: #f5f6fa; }
+        .offcanvas-map-side { width: 340px; min-width: 340px; border-left: 1px solid #e2e8f0; background: #f5f6fa; display: none; }
         #modal-map { width: 100%; height: 100%; }
 
-        /* ── Form styles ── */
-        .form-section { margin-bottom: 20px; }
-        .form-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #8392a5; font-weight: 600; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .form-group { flex: 1; display: flex; flex-direction: column; }
-        .form-group label { font-size: 11px; color: #64748b; margin-bottom: 3px; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea { padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; font-family: inherit; outline: none; transition: border-color .15s; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0168fa; box-shadow: 0 0 0 3px rgba(1,104,250,.1); }
-        .form-group textarea { resize: vertical; min-height: 50px; }
+        /* ── Accordion Steps ── */
+        .step-card { border: none; border-bottom: 1px solid #e2e8f0; }
+        .step-header { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; background: #fff; transition: background .1s; user-select: none; }
+        .step-header:hover { background: #f8fafc; }
+        .step-header.disabled { opacity: .45; pointer-events: none; }
+        .step-header .step-num { width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+        .step-header .step-num.completed { background: #10b759; color: #fff; }
+        .step-header .step-num.active { background: #0168fa; color: #fff; }
+        .step-header .step-title { font-weight: 600; font-size: 13px; }
+        .step-header .step-summary { font-size: 11px; color: #8392a5; margin-left: 4px; }
+        .step-header .collapse-icon { margin-left: auto; color: #8392a5; transition: transform .2s; font-size: 12px; }
+        .step-header.open .collapse-icon { transform: rotate(180deg); }
+        .step-body { display: none; padding: 0 20px 16px 60px; }
+        .step-body.open { display: block; }
 
-        .address-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
-        .address-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .address-card-header .tag { font-size: 10px; text-transform: uppercase; font-weight: 700; padding: 2px 8px; border-radius: 3px; }
-        .address-card-header .tag.pickup { background: #dbeafe; color: #1e40af; }
-        .address-card-header .tag.deliver { background: #fef3c7; color: #92400e; }
-        .address-card-header button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; }
+        /* ── Form styles (matching TMS has-top-label pattern) ── */
+        .f-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .f-group { flex: 1; position: relative; display: flex; flex-direction: column; }
+        .f-group label { font-size: 11px; color: #64748b; margin-bottom: 3px; font-weight: 500; }
+        .f-group input, .f-group select, .f-group textarea { padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; font-family: inherit; outline: none; transition: border-color .15s; }
+        .f-group input:focus, .f-group select:focus, .f-group textarea:focus { border-color: #0168fa; box-shadow: 0 0 0 3px rgba(1,104,250,.1); }
+        .f-group textarea { resize: vertical; min-height: 45px; }
 
-        .goods-line { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; }
-        .goods-line:last-child { border-bottom: none; }
-        .btn-add-line { background: none; border: 1px dashed #94a3b8; color: #64748b; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; width: 100%; margin-top: 6px; }
-        .btn-add-line:hover { border-color: #0168fa; color: #0168fa; }
+        .btn-next { display: block; width: 100%; padding: 8px; background: #fff; border: 1px solid #0168fa; color: #0168fa; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+        .btn-next:hover { background: #f0f7ff; }
+        .btn-next i { margin-left: 4px; }
 
-        /* ── Filter panel (search) ── */
+        .btn-primary-sm { background: #0168fa; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 500; }
+        .btn-primary-sm:hover { background: #0155d4; }
+        .btn-outline-sm { background: #fff; color: #0168fa; border: 1px solid #0168fa; padding: 5px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .btn-outline-sm:hover { background: #f0f7ff; }
+        .btn-success-block { display: block; width: 100%; padding: 12px; background: #10b759; color: #fff; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+        .btn-success-block:hover { background: #0ea04f; }
+
+        /* ── Order type cards ── */
+        .order-type-cards { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .order-type-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 16px; text-align: center; cursor: pointer; transition: all .15s; min-width: 80px; }
+        .order-type-card:hover { border-color: #0168fa; background: #f0f7ff; }
+        .order-type-card.selected { border-color: #0168fa; background: #dbeafe; }
+        .order-type-card i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .order-type-card small { font-size: 10px; font-weight: 600; }
+
+        /* ── Timeline waypoints ── */
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; }
+        .waypoint { position: relative; margin-bottom: 16px; }
+        .waypoint .wp-dot { position: absolute; left: -24px; top: 4px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; z-index: 1; }
+        .wp-dot.pickup { background: #0168fa; }
+        .wp-dot.dropoff { background: #f59e0b; }
+        .waypoint-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; }
+        .wp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .wp-type-btns { display: flex; gap: 0; }
+        .wp-type-btn { padding: 4px 10px; font-size: 10px; font-weight: 600; border: 1px solid #0168fa; color: #0168fa; background: #fff; cursor: pointer; }
+        .wp-type-btn:first-child { border-radius: 3px 0 0 3px; }
+        .wp-type-btn:last-child { border-radius: 0 3px 3px 0; }
+        .wp-type-btn.active { background: #0168fa; color: #fff; }
+        .wp-actions { display: flex; gap: 4px; }
+        .wp-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; padding: 2px 4px; }
+        .wp-actions button:hover { color: #ef4444; }
+        .wp-pod-row { display: flex; gap: 10px; margin-top: 4px; }
+
+        .btn-add-waypoint { background: none; border: 1px dashed #94a3b8; color: #64748b; padding: 8px 14px; border-radius: 4px; font-size: 11px; cursor: pointer; width: 100%; margin-top: 4px; }
+        .btn-add-waypoint:hover { border-color: #0168fa; color: #0168fa; }
+
+        /* ── Goods table ── */
+        .goods-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+        .goods-table th { background: #334155; color: #fff; padding: 5px 8px; font-size: 10px; font-weight: 500; text-align: right; }
+        .goods-table th:first-child, .goods-table th:nth-child(2) { text-align: left; }
+        .goods-table td { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; }
+        .goods-table input { width: 100%; border: 1px solid #e2e8f0; border-radius: 3px; padding: 4px 6px; font-size: 11px; text-align: right; }
+        .goods-table input.text-left { text-align: left; }
+        .goods-sums { display: flex; gap: 10px; margin-top: 8px; padding: 8px; background: #f8fafc; border-radius: 4px; }
+        .goods-sums .sum-item { font-size: 11px; color: #64748b; }
+        .goods-sums .sum-item strong { color: #1b2e4b; }
+
+        /* ── Pricing table ── */
+        .pricing-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+        .pricing-table th { background: #334155; color: #fff; padding: 5px 6px; font-size: 10px; font-weight: 500; text-align: right; }
+        .pricing-table th:nth-child(1), .pricing-table th:nth-child(3) { text-align: left; }
+        .pricing-table td { padding: 2px 4px; border-bottom: 1px solid #e2e8f0; }
+        .pricing-table input, .pricing-table select { width: 100%; border: 1px solid transparent; border-bottom: 1px solid #e2e8f0; padding: 4px 4px; font-size: 11px; text-align: right; background: transparent; outline: none; }
+        .pricing-table input:focus, .pricing-table select:focus { border-color: #0168fa; background: #fff; }
+        .pricing-totals { display: flex; gap: 10px; margin-top: 10px; }
+        .pricing-totals .tot { flex: 1; }
+        .pricing-totals .tot label { font-size: 10px; color: #64748b; display: block; margin-bottom: 2px; }
+        .pricing-totals .tot input { width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; text-align: right; background: #f8fafc; }
+
+        .invoice-options { display: flex; gap: 16px; margin-top: 10px; align-items: center; }
+        .switch-label { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+        .switch-label input[type="checkbox"] { width: 16px; height: 16px; }
+
+        .resource-select-row { display: flex; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+
+        /* ── Search panel ── */
         .search-toggle { display: none; width: 260px; min-width: 260px; background: #fff; border-right: 1px solid #e2e8f0; padding: 12px; overflow-y: auto; flex-direction: column; }
         .search-toggle.show { display: flex; }
         .search-toggle h6 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #8392a5; font-weight: 600; margin-bottom: 8px; margin-top: 12px; }
-        .search-toggle .form-group { margin-bottom: 8px; }
+        .search-toggle .f-group { margin-bottom: 8px; }
         .search-toggle .btn-search { width: 100%; padding: 8px; background: #10b759; color: #fff; border: none; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; margin-top: 10px; }
 
-        /* ── Responsive ── */
-        @media (max-width: 1200px) {
-            .map-sidebar { width: 280px; min-width: 200px; }
-            .resource-sidebar { width: 240px; min-width: 240px; }
-        }
+        /* ── Intro.js overrides ── */
+        .introjs-tooltip { max-width: 340px; font-family: inherit; }
+        .introjs-tooltiptext { font-size: 13px; line-height: 1.5; }
+        .introjs-button { font-size: 12px; font-weight: 500; text-shadow: none; }
+        .introjs-skipbutton { font-size: 12px; }
     </style>
 </head>
 <body>
 
 <!-- ═══════════════════ TOP BAR ═══════════════════ -->
-<div class="topbar">
+<div class="topbar" id="topbar">
     <div class="logo">FRAKT24</div>
-    <div class="nav-links">
+    <div class="nav-links" id="nav-links">
         <a href="#" class="active">Dispatch</a>
         <a href="#">Orders</a>
         <a href="#">Resources</a>
@@ -187,7 +263,7 @@
         <a href="#">Settings</a>
     </div>
     <div class="right-actions">
-        <button class="btn-add-order" onclick="openAddOrder()"><i class="fas fa-plus"></i> Create new order</button>
+        <button class="btn-add-order" id="btnCreateOrder" onclick="openAddOrder()"><i class="fas fa-plus"></i> Create new order</button>
         <button><i class="fas fa-bell"></i></button>
         <button><i class="fas fa-user"></i> Admin</button>
     </div>
@@ -196,11 +272,11 @@
 <!-- ═══════════════════ MAIN LAYOUT ═══════════════════ -->
 <div class="dispatch-wrapper">
 
-    <!-- ── Resource Nav (driver chips) ── -->
+    <!-- ── Resource Nav ── -->
     <div class="resource-nav" id="driverNav"></div>
 
     <!-- ── Resource Sidebar ── -->
-    <div class="resource-sidebar">
+    <div class="resource-sidebar" id="resourceSidebar">
         <div class="resource-header" id="resourceHeader">
             <div class="driver-info">
                 <div class="avatar" id="resAvatar">OL<span class="status-dot status-available"></span></div>
@@ -233,7 +309,7 @@
                 </div>
             </div>
         </div>
-        <div class="resource-tabs">
+        <div class="resource-tabs" id="resourceTabs">
             <button class="active">Orders</button>
             <button>Status</button>
             <button>Routes</button>
@@ -250,118 +326,58 @@
         </div>
     </div>
 
-    <!-- ── Search Filter Panel ── -->
+    <!-- ── Search Panel ── -->
     <div class="search-toggle" id="searchPanel">
         <h6 style="margin-top:0;">Search Orders</h6>
-        <div class="form-group">
-            <label>Order ID</label>
-            <input type="text" placeholder="e.g. 10524">
-        </div>
-        <div class="form-group">
-            <label>Reference</label>
-            <input type="text" placeholder="REF...">
-        </div>
-        <div class="form-group">
-            <label>Customer</label>
-            <input type="text" placeholder="Company name">
-        </div>
-        <div class="form-group">
-            <label>Display assigned</label>
-            <select>
-                <option>Only unassigned</option>
-                <option>All</option>
-                <option>Only assigned</option>
-            </select>
-        </div>
+        <div class="f-group"><label>Order ID</label><input type="text" placeholder="e.g. 10524"></div>
+        <div class="f-group"><label>Reference</label><input type="text" placeholder="REF..."></div>
+        <div class="f-group"><label>Customer</label><input type="text" placeholder="Company name"></div>
+        <div class="f-group"><label>Display assigned</label><select><option>Only unassigned</option><option>All</option><option>Only assigned</option></select></div>
         <h6>Address</h6>
-        <div class="form-group">
-            <label>Name</label>
-            <input type="text">
-        </div>
-        <div class="form-group">
-            <label>Zip</label>
-            <input type="text">
-        </div>
-        <div class="form-group">
-            <label>City</label>
-            <input type="text">
-        </div>
+        <div class="f-group"><label>Name</label><input type="text"></div>
+        <div class="f-group"><label>Zip</label><input type="text"></div>
+        <div class="f-group"><label>City</label><input type="text"></div>
         <h6>Display options</h6>
-        <div class="form-group">
-            <label>Parked orders</label>
-            <select><option>Yes</option><option>No</option><option>Only parked</option></select>
-        </div>
-        <div class="form-group">
-            <label>Finished orders</label>
-            <select><option>No</option><option>Yes</option><option>Only</option></select>
-        </div>
-        <div class="form-group">
-            <label>Sort by</label>
-            <select>
-                <option>OID</option>
-                <option>Pickup after</option>
-                <option>Deliver before</option>
-                <option>Customer</option>
-                <option>Reference</option>
-            </select>
-        </div>
+        <div class="f-group"><label>Parked orders</label><select><option>Yes</option><option>No</option><option>Only parked</option></select></div>
+        <div class="f-group"><label>Finished orders</label><select><option>No</option><option>Yes</option><option>Only</option></select></div>
+        <div class="f-group"><label>Sort by</label><select><option>OID</option><option>Pickup after</option><option>Deliver before</option><option>Customer</option></select></div>
         <button class="btn-search" onclick="toggleSearch()"><i class="fas fa-search"></i> Search</button>
     </div>
 
-    <!-- ── Center: Order List ── -->
-    <div class="order-list-wrapper">
-        <div class="order-tabs-bar">
+    <!-- ── Order List ── -->
+    <div class="order-list-wrapper" id="orderListWrapper">
+        <div class="order-tabs-bar" id="orderTabsBar">
             <div class="order-tab active">All unassigned orders <span class="badge">24</span></div>
             <div class="order-tab">Oslo Express <span class="badge" style="background:#f59e0b;">8</span></div>
             <div class="order-tab">Bergen Priority</div>
             <div class="order-tab">Trondheim</div>
             <span class="order-tab-add"><i class="fas fa-plus"></i> Add view</span>
             <span class="tab-spacer"></span>
-            <div class="view-toggles">
+            <div class="view-toggles" id="viewToggles">
                 <button class="active" title="List view"><i class="fas fa-th-list"></i></button>
                 <button title="Vehicle calendar"><i class="fas fa-truck"></i></button>
                 <button title="Resource calendar"><i class="fas fa-user-clock"></i></button>
                 <button title="Terminal"><i class="fas fa-warehouse"></i></button>
             </div>
-            <button class="settings-btn" title="Dispatch settings"><i class="fas fa-cog"></i></button>
+            <button class="settings-btn" title="Settings"><i class="fas fa-cog"></i></button>
             <button class="settings-btn" title="Search" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
         </div>
 
-        <div class="order-table-container">
+        <div class="order-table-container" id="orderTableContainer">
             <table class="order-table">
-                <thead>
-                    <tr>
-                        <th style="width:30px;"><input type="checkbox" id="selectAll"></th>
-                        <th>OID</th>
-                        <th class="icon-cell">A</th>
-                        <th class="icon-cell">V</th>
-                        <th class="icon-cell">S</th>
-                        <th>T</th>
-                        <th>P AFTER</th>
-                        <th>D BEFORE</th>
-                        <th>REF</th>
-                        <th>CUSTOMER</th>
-                        <th>AQ</th>
-                        <th>P ZONE</th>
-                        <th>P NAME</th>
-                        <th>P ZIP</th>
-                        <th>P CITY</th>
-                        <th>D ZONE</th>
-                        <th>D NAME</th>
-                        <th>D ZIP</th>
-                        <th>D CITY</th>
-                        <th>QTY</th>
-                        <th>KG</th>
-                        <th>M³</th>
-                        <th>KM</th>
-                        <th>TIME</th>
-                    </tr>
-                </thead>
+                <thead><tr>
+                    <th style="width:30px;"><input type="checkbox"></th>
+                    <th>OID</th><th class="icon-cell">A</th><th class="icon-cell">V</th><th class="icon-cell">S</th><th>T</th>
+                    <th>P AFTER</th><th>D BEFORE</th><th>REF</th><th>CUSTOMER</th><th>AQ</th>
+                    <th>P ZONE</th><th>P NAME</th><th>P ZIP</th><th>P CITY</th>
+                    <th>D ZONE</th><th>D NAME</th><th>D ZIP</th><th>D CITY</th>
+                    <th>QTY</th><th>KG</th><th>M³</th><th>KM</th><th>TIME</th>
+                </tr></thead>
                 <tbody id="orderTableBody"></tbody>
             </table>
         </div>
 
-        <div class="order-footer">
+        <div class="order-footer" id="orderFooter">
             <label><input type="checkbox"> Select all</label>
             <div class="actions">
                 <button><i class="fas fa-route"></i> Assign to route</button>
@@ -370,302 +386,429 @@
                 <button><i class="fas fa-object-group"></i> Merge</button>
             </div>
             <div class="pagination">
-                <span class="info">Showing 1-25 of 24</span>
+                <span class="info">Showing 1-12 of 24</span>
                 <button class="active">1</button>
+                <button>2</button>
             </div>
         </div>
     </div>
 
-    <!-- ── Right: Map Sidebar ── -->
-    <div class="map-sidebar">
+    <!-- ── Map ── -->
+    <div class="map-sidebar" id="mapSidebar">
         <div id="map"></div>
     </div>
-
 </div>
 
-<!-- ═══════════════════ OFF-CANVAS: CREATE NEW ORDER ═══════════════════ -->
+<!-- ═══════════════════ OFF-CANVAS: CREATE NEW ORDER (5-step accordion) ═══════════════════ -->
 <div class="offcanvas-overlay" id="offcanvasOverlay" onclick="closeAddOrder()"></div>
 <div class="offcanvas-panel" id="offcanvasPanel">
     <div class="offcanvas-form-side">
-        <div class="offcanvas-header">
-            <h5>Create new order</h5>
+        <div class="offcanvas-header" id="offcanvasHeader">
+            <h5><i class="fas fa-plus-circle" style="color:#10b759;margin-right:6px;"></i> Create new order</h5>
             <button class="close-btn" onclick="closeAddOrder()"><i class="fas fa-times"></i></button>
         </div>
-        <div class="offcanvas-body">
-            <!-- Order Details -->
-            <div class="form-section">
-                <div class="form-section-title">Order Details</div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Customer *</label>
-                        <select>
-                            <option value="">Select customer...</option>
-                            <option>Nordic Logistics AS</option>
-                            <option>Scandinavian Transport AB</option>
-                            <option>Oslo Freight Co.</option>
-                            <option>Bergen Shipping AS</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Reference</label>
-                        <input type="text" placeholder="REF-2024-...">
-                    </div>
+        <div class="offcanvas-body" id="offcanvasBody">
+
+            <!-- ═══ STEP 1: Customer ═══ -->
+            <div class="step-card" id="step1">
+                <div class="step-header open" onclick="toggleStep(1)">
+                    <div class="step-num active" id="stepNum1">1</div>
+                    <span class="step-title">Customer</span>
+                    <span class="step-summary" id="stepSummary1"></span>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Vehicle type *</label>
-                        <select>
-                            <option>Small van</option>
-                            <option selected>Large van</option>
-                            <option>Truck</option>
-                            <option>Semi-trailer</option>
-                        </select>
+                <div class="step-body open" id="stepBody1">
+                    <div class="f-row">
+                        <div class="f-group" id="customerNameField">
+                            <label>Customer Name *</label>
+                            <input type="text" id="customerNameInput" placeholder="Search customer..." autocomplete="off">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Service type *</label>
-                        <select>
-                            <option>Standard</option>
-                            <option>Express</option>
-                            <option>Same day</option>
-                            <option>Overnight</option>
-                        </select>
+                    <div class="f-row" id="customerContactRow" style="display:none;">
+                        <div class="f-group">
+                            <label>Contact Name</label>
+                            <select id="contactSelect"><option value="">Select contact...</option><option>Per Hansen</option><option>Kari Olsen</option></select>
+                        </div>
+                        <div class="f-group" style="flex:.6;">
+                            <label>Send confirm email</label>
+                            <select><option>Yes</option><option>No</option></select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Order type</label>
-                        <select>
-                            <option>Pickup & Delivery</option>
-                            <option>Pickup only</option>
-                            <option>Delivery only</option>
-                        </select>
+                    <div id="customerDetailsSection" style="display:none;">
+                        <div class="f-row">
+                            <div class="f-group">
+                                <label>Visit Address</label>
+                                <input type="text" id="customerAddress" readonly>
+                            </div>
+                        </div>
+                        <div class="f-row">
+                            <div class="f-group"><label>Zip</label><input type="text" id="customerZip" readonly></div>
+                            <div class="f-group"><label>Place</label><input type="text" id="customerCity" readonly></div>
+                            <div class="f-group"><label>Country</label><select disabled><option>Norway</option></select></div>
+                        </div>
+                        <div class="f-row">
+                            <div class="f-group">
+                                <label>Note</label>
+                                <textarea placeholder="Order note..."></textarea>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Pickup after</label>
-                        <input type="datetime-local" value="2026-05-19T08:00">
-                    </div>
-                    <div class="form-group">
-                        <label>Deliver before</label>
-                        <input type="datetime-local" value="2026-05-19T16:00">
-                    </div>
+                    <button class="btn-next" id="btnNextStep1" onclick="completeStep(1)">Next <i class="fas fa-arrow-down"></i></button>
                 </div>
             </div>
 
-            <!-- Addresses -->
-            <div class="form-section">
-                <div class="form-section-title">Addresses</div>
-
-                <div class="address-card">
-                    <div class="address-card-header">
-                        <span class="tag pickup"><i class="fas fa-arrow-up"></i> Pickup</span>
-                        <button title="Remove"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" placeholder="Company / Contact name">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex:2;">
-                            <label>Address</label>
-                            <input type="text" placeholder="Street and number">
-                        </div>
-                        <div class="form-group">
-                            <label>Zip</label>
-                            <input type="text" placeholder="0001">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>City</label>
-                            <input type="text" placeholder="City">
-                        </div>
-                        <div class="form-group">
-                            <label>Country</label>
-                            <select><option>Norway</option><option>Sweden</option><option>Denmark</option><option>Finland</option></select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Contact person</label>
-                            <input type="text">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone</label>
-                            <input type="text" placeholder="+47">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Instructions</label>
-                            <textarea placeholder="Special instructions for pickup..."></textarea>
-                        </div>
-                    </div>
+            <!-- ═══ STEP 2: Tasks / Waypoints ═══ -->
+            <div class="step-card" id="step2">
+                <div class="step-header disabled" id="stepHeader2" onclick="toggleStep(2)">
+                    <div class="step-num" id="stepNum2">2</div>
+                    <span class="step-title">Tasks</span>
+                    <span class="step-summary" id="stepSummary2"></span>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
                 </div>
+                <div class="step-body" id="stepBody2">
+                    <p style="font-size:11px;color:#8392a5;margin-bottom:8px;">Select order type</p>
+                    <div class="order-type-cards" id="orderTypeCards">
+                        <div class="order-type-card selected" data-type="transport" onclick="selectOrderType(this)">
+                            <i class="fas fa-truck" style="color:#0168fa;"></i>
+                            <small>Transport</small>
+                        </div>
+                        <div class="order-type-card" data-type="service" onclick="selectOrderType(this)">
+                            <i class="fas fa-tools" style="color:#64748b;"></i>
+                            <small>Service</small>
+                        </div>
+                        <div class="order-type-card" data-type="favorite" onclick="selectOrderType(this)">
+                            <i class="fas fa-heart" style="color:#ef4444;"></i>
+                            <small>Favorite</small>
+                        </div>
+                    </div>
 
-                <div class="address-card">
-                    <div class="address-card-header">
-                        <span class="tag deliver"><i class="fas fa-arrow-down"></i> Delivery</span>
-                        <button title="Remove"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" placeholder="Company / Contact name">
+                    <div class="timeline" id="waypointTimeline">
+                        <div class="waypoint" id="waypoint1">
+                            <div class="wp-dot pickup"><i class="fas fa-arrow-left" style="font-size:8px;"></i></div>
+                            <div class="waypoint-card">
+                                <div class="wp-header">
+                                    <div class="wp-type-btns">
+                                        <button class="wp-type-btn active">Pick-up</button>
+                                        <button class="wp-type-btn" onclick="this.parentElement.querySelectorAll('.wp-type-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Drop-off</button>
+                                        <button class="wp-type-btn" onclick="this.parentElement.querySelectorAll('.wp-type-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Assignment</button>
+                                    </div>
+                                    <div class="wp-actions">
+                                        <button title="Set customer address"><i class="fas fa-home"></i></button>
+                                        <button title="Clear"><i class="fas fa-times"></i></button>
+                                        <button title="Remove"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Name</label><input type="text" placeholder="Address name..."></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group" style="flex:2;"><label>Address</label><input type="text" placeholder="Street and number"></div>
+                                    <div class="f-group"><label>Zip</label><input type="text" placeholder="0001"></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>City</label><input type="text"></div>
+                                    <div class="f-group"><label>Country</label><select><option>Norway</option><option>Sweden</option><option>Denmark</option></select></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Contact</label><input type="text"></div>
+                                    <div class="f-group"><label>Phone</label><input type="text" placeholder="+47"></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Instruction</label><textarea placeholder="Instructions for this address..."></textarea></div>
+                                </div>
+                                <div class="wp-pod-row">
+                                    <div class="f-group" style="flex:.5;"><label>Require POD</label><select><option>N</option><option>Y</option></select></div>
+                                    <div class="f-group" style="flex:.5;"><label>Duration</label><select><option>0 min</option><option>5 min</option><option>10 min</option><option>15 min</option><option>30 min</option><option>45 min</option><option>60 min</option></select></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="waypoint" id="waypoint2">
+                            <div class="wp-dot dropoff"><i class="fas fa-arrow-right" style="font-size:8px;"></i></div>
+                            <div class="waypoint-card">
+                                <div class="wp-header">
+                                    <div class="wp-type-btns">
+                                        <button class="wp-type-btn">Pick-up</button>
+                                        <button class="wp-type-btn active">Drop-off</button>
+                                        <button class="wp-type-btn">Assignment</button>
+                                    </div>
+                                    <div class="wp-actions">
+                                        <button title="Set customer address"><i class="fas fa-home"></i></button>
+                                        <button title="Clear"><i class="fas fa-times"></i></button>
+                                        <button title="Remove"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Name</label><input type="text" placeholder="Address name..."></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group" style="flex:2;"><label>Address</label><input type="text" placeholder="Street and number"></div>
+                                    <div class="f-group"><label>Zip</label><input type="text" placeholder="0001"></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>City</label><input type="text"></div>
+                                    <div class="f-group"><label>Country</label><select><option>Norway</option><option>Sweden</option><option>Denmark</option></select></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Contact</label><input type="text"></div>
+                                    <div class="f-group"><label>Phone</label><input type="text" placeholder="+47"></div>
+                                </div>
+                                <div class="f-row">
+                                    <div class="f-group"><label>Instruction</label><textarea placeholder="Instructions for this address..."></textarea></div>
+                                </div>
+                                <div class="wp-pod-row">
+                                    <div class="f-group" style="flex:.5;"><label>Require POD</label><select><option>N</option><option>Y</option></select></div>
+                                    <div class="f-group" style="flex:.5;"><label>Duration</label><select><option>0 min</option><option>5 min</option><option>10 min</option><option>15 min</option><option>30 min</option><option>45 min</option><option>60 min</option></select></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex:2;">
-                            <label>Address</label>
-                            <input type="text" placeholder="Street and number">
-                        </div>
-                        <div class="form-group">
-                            <label>Zip</label>
-                            <input type="text" placeholder="0001">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>City</label>
-                            <input type="text" placeholder="City">
-                        </div>
-                        <div class="form-group">
-                            <label>Country</label>
-                            <select><option>Norway</option><option>Sweden</option><option>Denmark</option><option>Finland</option></select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Contact person</label>
-                            <input type="text">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone</label>
-                            <input type="text" placeholder="+47">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Instructions</label>
-                            <textarea placeholder="Special instructions for delivery..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-add-line"><i class="fas fa-plus"></i> Add address</button>
-            </div>
-
-            <!-- Goods -->
-            <div class="form-section">
-                <div class="form-section-title">Goods</div>
-                <div class="goods-line">
-                    <div class="form-group" style="flex:2;">
-                        <label>Description</label>
-                        <input type="text" placeholder="Goods description">
-                    </div>
-                    <div class="form-group">
-                        <label>Type</label>
-                        <select><option>Pallet</option><option>Package</option><option>Bulk</option><option>Container</option></select>
-                    </div>
-                    <div class="form-group" style="flex:.6;">
-                        <label>Qty</label>
-                        <input type="number" value="1">
-                    </div>
-                    <div class="form-group" style="flex:.6;">
-                        <label>Weight (kg)</label>
-                        <input type="number" placeholder="0">
-                    </div>
-                    <div class="form-group" style="flex:.6;">
-                        <label>Volume (m³)</label>
-                        <input type="number" placeholder="0">
-                    </div>
-                    <button style="background:none;border:none;color:#94a3b8;cursor:pointer;margin-top:18px;font-size:14px;" title="Remove line"><i class="fas fa-trash-alt"></i></button>
-                </div>
-                <button class="btn-add-line"><i class="fas fa-plus"></i> Add goods line</button>
-            </div>
-
-            <!-- Internal Notes -->
-            <div class="form-section">
-                <div class="form-section-title">Internal Notes</div>
-                <div class="form-group">
-                    <textarea placeholder="Internal notes (not visible to customer)..." rows="2"></textarea>
+                    <button class="btn-add-waypoint"><i class="fas fa-plus-circle"></i> New waypoint</button>
+                    <button class="btn-next" onclick="completeStep(2)">Next <i class="fas fa-arrow-down"></i></button>
                 </div>
             </div>
-        </div>
-        <div class="offcanvas-footer">
-            <button class="btn-cancel" onclick="closeAddOrder()">Cancel</button>
-            <button class="btn-save" onclick="closeAddOrder()"><i class="fas fa-save"></i> Save order</button>
+
+            <!-- ═══ STEP 3: Goods / Description ═══ -->
+            <div class="step-card" id="step3">
+                <div class="step-header disabled" id="stepHeader3" onclick="toggleStep(3)">
+                    <div class="step-num" id="stepNum3">3</div>
+                    <span class="step-title">Description</span>
+                    <span class="step-summary" id="stepSummary3"></span>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+                <div class="step-body" id="stepBody3">
+                    <div class="f-row">
+                        <div class="f-group" style="flex:.3;" id="goodsQtyField">
+                            <label>Quant</label>
+                            <input type="text" value="1">
+                        </div>
+                        <div class="f-group" id="goodsTypeField">
+                            <label>Goodstype</label>
+                            <select>
+                                <option value="">--- SELECT GOODSTYPE ---</option>
+                                <option>EUR Pallet</option>
+                                <option>Half Pallet</option>
+                                <option>Package</option>
+                                <option>Roll container</option>
+                                <option>Bulk</option>
+                                <option>Container 20ft</option>
+                                <option>Container 40ft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="goodsDetailFields" style="display:none;">
+                        <div class="f-row">
+                            <div class="f-group"><label>ID</label><input type="text" value=""></div>
+                            <div class="f-group"><label>Weight (kg)</label><input type="text" value="0.00"></div>
+                            <div class="f-group"><label>Vol (m³)</label><input type="text" value="0.00"></div>
+                            <div class="f-group"><label>Length</label><input type="text" value="0.00"></div>
+                            <div class="f-group"><label>Width</label><input type="text" value="0.00"></div>
+                            <div class="f-group"><label>Height</label><input type="text" value="0.00"></div>
+                        </div>
+                        <div class="f-row">
+                            <div class="f-group"><label>Loadmeters</label><input type="text" value="0.00"></div>
+                            <div class="f-group"><label>Palletplaces</label><input type="text" value="0.00"></div>
+                        </div>
+                        <button class="btn-outline-sm" id="btnAddGoods"><i class="fas fa-plus-circle"></i> Add goods</button>
+                    </div>
+
+                    <table class="goods-table" id="goodsTable" style="display:none;">
+                        <thead><tr><th style="text-align:left;">Type</th><th style="text-align:left;">ID</th><th>kg</th><th>m³</th><th>L</th><th>W</th><th>H</th><th>Lm</th><th>Ppl</th><th></th></tr></thead>
+                        <tbody id="goodsTableBody"></tbody>
+                    </table>
+
+                    <div class="goods-sums" id="goodsSums" style="display:none;">
+                        <span class="sum-item"><i class="fas fa-dolly"></i> Qty: <strong id="sumQty">0</strong></span>
+                        <span class="sum-item"><i class="fas fa-weight-hanging"></i> Weight: <strong id="sumWeight">0</strong> kg</span>
+                        <span class="sum-item"><i class="fas fa-ruler-combined"></i> Volume: <strong id="sumVol">0</strong> m³</span>
+                    </div>
+
+                    <div class="f-row" style="margin-top:10px;">
+                        <div class="f-group">
+                            <label>Description</label>
+                            <textarea id="goodsDescription" placeholder="Goods description / free text..."></textarea>
+                        </div>
+                    </div>
+                    <button class="btn-next" onclick="completeStep(3)">Next <i class="fas fa-arrow-down"></i></button>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 4: Time ═══ -->
+            <div class="step-card" id="step4">
+                <div class="step-header disabled" id="stepHeader4" onclick="toggleStep(4)">
+                    <div class="step-num" id="stepNum4">4</div>
+                    <span class="step-title">Time</span>
+                    <span class="step-summary" id="stepSummary4"></span>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+                <div class="step-body" id="stepBody4">
+                    <div class="f-row" id="pickupTimeRow">
+                        <div class="f-group"><label>Pickup after date</label><input type="date" id="pickupDate" value="2026-05-19"></div>
+                        <div class="f-group"><label>Pickup after clock</label><input type="time" id="pickupTime" value="08:00"></div>
+                    </div>
+                    <div class="f-row" id="deliverTimeRow">
+                        <div class="f-group"><label>Deliver before date</label><input type="date" id="deliverDate" value="2026-05-19"></div>
+                        <div class="f-group"><label>Deliver before clock</label><input type="time" id="deliverTime" value="16:00"></div>
+                    </div>
+                    <button class="btn-next" onclick="completeStep(4)">Next <i class="fas fa-arrow-down"></i></button>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 5: Product & Pricing ═══ -->
+            <div class="step-card" id="step5">
+                <div class="step-header disabled" id="stepHeader5" onclick="toggleStep(5)">
+                    <div class="step-num" id="stepNum5">5</div>
+                    <span class="step-title">Product</span>
+                    <span class="step-summary" id="stepSummary5"></span>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+                <div class="step-body" id="stepBody5">
+                    <div class="f-row" id="serviceVehicleRow">
+                        <div class="f-group">
+                            <label>Servicetype</label>
+                            <select id="serviceTypeSelect"><option>Standard</option><option>Express</option><option>Same day</option><option>Overnight</option></select>
+                        </div>
+                        <div class="f-group">
+                            <label>Vehiclegroup</label>
+                            <select id="vehicleGroupSelect"><option>Small van</option><option>Large van</option><option>Truck 7.5t</option><option>Truck 12t</option><option>Semi-trailer</option></select>
+                        </div>
+                    </div>
+
+                    <table class="pricing-table" id="pricingTable">
+                        <thead><tr>
+                            <th style="width:8%;">Code</th><th style="width:5%;text-align:right;">Qty</th><th style="width:20%;text-align:left;">Name</th>
+                            <th style="width:10%;">Price</th><th style="width:8%;">Rab%</th><th style="width:10%;">Sub</th>
+                            <th style="width:10%;">RBase</th><th style="width:10%;">RSum</th><th style="width:8%;">R%</th>
+                            <th style="width:10%;">Tax%</th><th style="width:3%;"></th>
+                        </tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><input value="FRK01" style="text-align:left;"></td>
+                                <td><input value="1"></td>
+                                <td><input value="Transport standard" style="text-align:left;"></td>
+                                <td><input value="1 250,00"></td>
+                                <td><input value="0"></td>
+                                <td><input value="1 250,00" readonly style="background:#f8fafc;"></td>
+                                <td><input value="800,00"></td>
+                                <td><input value="800,00" readonly style="background:#f8fafc;"></td>
+                                <td><input value="0"></td>
+                                <td><select><option>25%</option><option>15%</option><option>0%</option></select></td>
+                                <td><button style="background:none;border:none;color:#94a3b8;cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:6px;">
+                        <button class="btn-outline-sm" id="btnAddPriceLine"><i class="fas fa-plus-circle"></i> Add Price Line</button>
+                    </div>
+
+                    <div class="pricing-totals" id="pricingTotals">
+                        <div class="tot"><label>Net amount</label><input value="1 250,00" readonly></div>
+                        <div class="tot"><label>Tax</label><input value="312,50" readonly></div>
+                        <div class="tot"><label>Total</label><input value="1 562,50" readonly style="font-weight:700;"></div>
+                    </div>
+
+                    <div class="f-row" style="margin-top:12px;" id="invoiceRefRow">
+                        <div class="f-group"><label>Invoice ref</label><input type="text" placeholder="Invoice reference"></div>
+                        <div class="f-group" style="flex:.8; justify-content: center; gap: 8px; padding-top: 16px;">
+                            <label class="switch-label"><input type="checkbox"> Own Invoice</label>
+                            <label class="switch-label"><input type="checkbox" checked> Ready to invoice</label>
+                        </div>
+                    </div>
+
+                    <div class="resource-select-row" id="resourceSelectRow">
+                        <div class="f-group" style="flex:2;">
+                            <label>Select resource</label>
+                            <select><option value="">Select resource...</option><option>Ole Larsen</option><option>Kari Nordström</option><option>Erik Hansen</option><option>Lars Svensson</option><option>Magnus Vik</option></select>
+                        </div>
+                        <div class="f-group">
+                            <label>Com type</label>
+                            <select disabled><option>App</option><option>SMS</option><option>Email</option></select>
+                        </div>
+                    </div>
+
+                    <button class="btn-success-block" id="btnAddOrder"><i class="fas fa-save"></i> Add Order</button>
+                </div>
+            </div>
+
         </div>
     </div>
-    <div class="offcanvas-map-side">
+    <div class="offcanvas-map-side" id="offcanvasMapSide">
         <div id="modal-map"></div>
     </div>
 </div>
 
+<!-- ═══════════════════ TOUR LAUNCHER ═══════════════════ -->
+<div class="tour-launcher">
+    <div class="tour-menu" id="tourMenu">
+        <div class="tour-menu-header">Guided Tours</div>
+        <a href="#" onclick="startTour('overview'); return false;"><i class="fas fa-compass"></i> Dispatch Overview</a>
+        <a href="#" onclick="startTour('createOrder'); return false;"><i class="fas fa-plus-circle"></i> Create Order (Full Flow)</a>
+        <a href="#" onclick="startTour('resources'); return false;"><i class="fas fa-user-cog"></i> Resource Management</a>
+        <a href="#" onclick="startTour('search'); return false;"><i class="fas fa-search"></i> Search &amp; Filters</a>
+    </div>
+    <button class="tour-toggle" id="tourToggle" onclick="document.getElementById('tourMenu').classList.toggle('show')" title="Guided Tours">
+        <i class="fas fa-question"></i>
+    </button>
+</div>
+
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/intro.min.js"></script>
 <script>
-// ── Hardcoded Data ──
+// ══════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════
 const drivers = [
-    { id: 1, name: 'Ole Larsen', initials: 'OL', color: '#5b47fb', status: 'available', phone: '+47 912 34 567' },
-    { id: 2, name: 'Kari Nordström', initials: 'KN', color: '#0168fa', status: 'busy', phone: '+47 923 45 678' },
-    { id: 3, name: 'Erik Hansen', initials: 'EH', color: '#e74c3c', status: 'available', phone: '+47 934 56 789' },
-    { id: 4, name: 'Ingrid Berg', initials: 'IB', color: '#10b759', status: 'offline', phone: '+47 945 67 890' },
-    { id: 5, name: 'Lars Svensson', initials: 'LS', color: '#f59e0b', status: 'available', phone: '+47 956 78 901' },
-    { id: 6, name: 'Anna Johansen', initials: 'AJ', color: '#ec4899', status: 'busy', phone: '+47 967 89 012' },
-    { id: 7, name: 'Magnus Vik', initials: 'MV', color: '#14b8a6', status: 'available', phone: '+47 978 90 123' },
-    { id: 8, name: 'Sofie Dahl', initials: 'SD', color: '#8b5cf6', status: 'offline', phone: '+47 989 01 234' },
+    { id:1, name:'Ole Larsen', initials:'OL', color:'#5b47fb', status:'available' },
+    { id:2, name:'Kari Nordström', initials:'KN', color:'#0168fa', status:'busy' },
+    { id:3, name:'Erik Hansen', initials:'EH', color:'#e74c3c', status:'available' },
+    { id:4, name:'Ingrid Berg', initials:'IB', color:'#10b759', status:'offline' },
+    { id:5, name:'Lars Svensson', initials:'LS', color:'#f59e0b', status:'available' },
+    { id:6, name:'Anna Johansen', initials:'AJ', color:'#ec4899', status:'busy' },
+    { id:7, name:'Magnus Vik', initials:'MV', color:'#14b8a6', status:'available' },
+    { id:8, name:'Sofie Dahl', initials:'SD', color:'#8b5cf6', status:'offline' },
 ];
 
 const resourceOrders = [
-    { oid: 10501, from: 'Aker Brygge, Oslo', to: 'Majorstuen, Oslo', pAfter: '08:00', dBefore: '10:30' },
-    { oid: 10504, from: 'Grünerløkka, Oslo', to: 'Sandvika', pAfter: '09:15', dBefore: '11:00' },
-    { oid: 10512, from: 'Lillestrøm', to: 'Ski', pAfter: '10:30', dBefore: '13:00' },
-    { oid: 10518, from: 'Drammen', to: 'Tønsberg', pAfter: '12:00', dBefore: '15:00' },
-    { oid: 10523, from: 'Asker', to: 'Bærum', pAfter: '13:30', dBefore: '15:30' },
-    { oid: 10529, from: 'Fredrikstad', to: 'Sarpsborg', pAfter: '14:00', dBefore: '16:30' },
+    { oid:10501, from:'Aker Brygge, Oslo', to:'Majorstuen, Oslo', pAfter:'08:00', dBefore:'10:30' },
+    { oid:10504, from:'Grünerløkka, Oslo', to:'Sandvika', pAfter:'09:15', dBefore:'11:00' },
+    { oid:10512, from:'Lillestrøm', to:'Ski', pAfter:'10:30', dBefore:'13:00' },
+    { oid:10518, from:'Drammen', to:'Tønsberg', pAfter:'12:00', dBefore:'15:00' },
+    { oid:10523, from:'Asker', to:'Bærum', pAfter:'13:30', dBefore:'15:30' },
+    { oid:10529, from:'Fredrikstad', to:'Sarpsborg', pAfter:'14:00', dBefore:'16:30' },
 ];
 
 const orders = [
-    { oid: 10501, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'PD', pAfter: '08:00', dBefore: '10:30', ref: 'REF-4821', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Oslo Ø', pName: 'Aker Brygge Warehouse', pZip: '0252', pCity: 'Oslo', dZone: 'Oslo V', dName: 'Majorstuen Hub', dZip: '0305', dCity: 'Oslo', qty: 4, kg: 280, vol: 2.1, km: 12, time: '25m', zoneColor: '#dbeafe' },
-    { oid: 10502, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'PD', pAfter: '07:30', dBefore: '12:00', ref: 'REF-4822', customer: 'Scandinavian Transport', aq: 3, pZone: 'Bergen', pName: 'Flesland Terminal', pZip: '5258', pCity: 'Bergen', dZone: 'Stavanger', dName: 'Forus Depot', dZip: '4033', dCity: 'Stavanger', qty: 12, kg: 4200, vol: 18.5, km: 210, time: '3h 15m', zoneColor: '#fef3c7' },
-    { oid: 10503, assigned: null, vehicle: 'fa-truck-moving', service: 'fa-bolt', type: 'D', pAfter: '09:00', dBefore: '14:00', ref: 'REF-4823', customer: 'Oslo Freight Co.', aq: 1, pZone: 'Oslo S', pName: 'Alnabru Terminal', pZip: '0614', pCity: 'Oslo', dZone: 'Drammen', dName: 'Drammen Warehouse', dZip: '3044', dCity: 'Drammen', qty: 8, kg: 1500, vol: 8.2, km: 45, time: '50m', zoneColor: '#ede9fe' },
-    { oid: 10504, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '09:15', dBefore: '11:00', ref: 'REF-4824', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Oslo Ø', pName: 'Grünerløkka', pZip: '0555', pCity: 'Oslo', dZone: 'Akershus', dName: 'Sandvika Center', dZip: '1337', dCity: 'Sandvika', qty: 2, kg: 120, vol: 0.8, km: 18, time: '30m', zoneColor: '#dbeafe' },
-    { oid: 10505, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'P', pAfter: '10:00', dBefore: '16:00', ref: 'REF-4825', customer: 'Bergen Shipping AS', aq: 4, pZone: 'Trondheim', pName: 'Brattøra Port', pZip: '7010', pCity: 'Trondheim', dZone: 'Trondheim', dName: 'Heimdal Depot', dZip: '7080', dCity: 'Heimdal', qty: 20, kg: 8400, vol: 42.0, km: 15, time: '20m', zoneColor: '#d1fae5' },
-    { oid: 10506, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'PD', pAfter: '08:30', dBefore: '11:30', ref: 'REF-4826', customer: 'Scandinavian Transport', aq: 2, pZone: 'Oslo N', pName: 'Nydalen Office', pZip: '0484', pCity: 'Oslo', dZone: 'Oslo S', dName: 'Bjørvika Tower', dZip: '0150', dCity: 'Oslo', qty: 1, kg: 45, vol: 0.3, km: 8, time: '18m', zoneColor: '#fce7f3' },
-    { oid: 10507, assigned: null, vehicle: 'fa-truck-moving', service: 'fa-clock', type: 'PD', pAfter: '06:00', dBefore: '18:00', ref: 'REF-4827', customer: 'Oslo Freight Co.', aq: 6, pZone: 'Kristiansand', pName: 'Sørlandsparken', pZip: '4636', pCity: 'Kristiansand', dZone: 'Oslo', dName: 'Alnabru Terminal', dZip: '0614', dCity: 'Oslo', qty: 24, kg: 12000, vol: 65.0, km: 320, time: '4h 30m', zoneColor: '#ffedd5' },
-    { oid: 10508, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-bolt', type: 'D', pAfter: '11:00', dBefore: '13:00', ref: 'REF-4828', customer: 'Nordic Logistics AS', aq: 1, pZone: 'Akershus', pName: 'Lørenskog Dist.', pZip: '1473', pCity: 'Lørenskog', dZone: 'Oslo Ø', dName: 'Tøyen', dZip: '0577', dCity: 'Oslo', qty: 3, kg: 200, vol: 1.5, km: 14, time: '22m', zoneColor: '#dbeafe' },
-    { oid: 10509, assigned: null, vehicle: 'fa-truck', service: 'fa-clock', type: 'PD', pAfter: '07:00', dBefore: '15:00', ref: 'REF-4829', customer: 'Bergen Shipping AS', aq: 3, pZone: 'Tromsø', pName: 'Tromsø Havn', pZip: '9008', pCity: 'Tromsø', dZone: 'Bodø', dName: 'Bodø Terminal', dZip: '8006', dCity: 'Bodø', qty: 15, kg: 6200, vol: 34.0, km: 595, time: '8h 10m', zoneColor: '#e0e7ff' },
-    { oid: 10510, assigned: null, vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '09:30', dBefore: '12:30', ref: 'REF-4830', customer: 'Scandinavian Transport', aq: 2, pZone: 'Oslo V', pName: 'Skøyen', pZip: '0276', pCity: 'Oslo', dZone: 'Asker', dName: 'Asker Sentrum', dZip: '1384', dCity: 'Asker', qty: 5, kg: 320, vol: 2.8, km: 22, time: '35m', zoneColor: '#fef3c7' },
-    { oid: 10511, assigned: null, vehicle: 'fa-truck', service: 'fa-bolt', type: 'PD', pAfter: '08:00', dBefore: '17:00', ref: 'REF-4831', customer: 'Oslo Freight Co.', aq: 5, pZone: 'Fredrikstad', pName: 'Fredrikstad Kai', pZip: '1632', pCity: 'Fredrikstad', dZone: 'Halden', dName: 'Halden Depot', dZip: '1771', dCity: 'Halden', qty: 10, kg: 3800, vol: 22.0, km: 35, time: '40m', zoneColor: '#d1fae5' },
-    { oid: 10512, assigned: 'check', vehicle: 'fa-van-shuttle', service: 'fa-clock', type: 'PD', pAfter: '10:30', dBefore: '13:00', ref: 'REF-4832', customer: 'Nordic Logistics AS', aq: 2, pZone: 'Akershus', pName: 'Lillestrøm', pZip: '2003', pCity: 'Lillestrøm', dZone: 'Follo', dName: 'Ski Terminal', dZip: '1400', dCity: 'Ski', qty: 6, kg: 450, vol: 3.2, km: 28, time: '38m', zoneColor: '#dbeafe' },
+    { oid:10501, assigned:'check', vehicle:'fa-van-shuttle', service:'fa-bolt', type:'PD', pAfter:'08:00', dBefore:'10:30', ref:'REF-4821', customer:'Nordic Logistics AS', aq:2, pZone:'Oslo Ø', pName:'Aker Brygge Warehouse', pZip:'0252', pCity:'Oslo', dZone:'Oslo V', dName:'Majorstuen Hub', dZip:'0305', dCity:'Oslo', qty:4, kg:280, vol:2.1, km:12, time:'25m', zc:'#dbeafe' },
+    { oid:10502, assigned:null, vehicle:'fa-truck', service:'fa-clock', type:'PD', pAfter:'07:30', dBefore:'12:00', ref:'REF-4822', customer:'Scandinavian Transport', aq:3, pZone:'Bergen', pName:'Flesland Terminal', pZip:'5258', pCity:'Bergen', dZone:'Stavanger', dName:'Forus Depot', dZip:'4033', dCity:'Stavanger', qty:12, kg:4200, vol:18.5, km:210, time:'3h 15m', zc:'#fef3c7' },
+    { oid:10503, assigned:null, vehicle:'fa-truck-moving', service:'fa-bolt', type:'D', pAfter:'09:00', dBefore:'14:00', ref:'REF-4823', customer:'Oslo Freight Co.', aq:1, pZone:'Oslo S', pName:'Alnabru Terminal', pZip:'0614', pCity:'Oslo', dZone:'Drammen', dName:'Drammen Warehouse', dZip:'3044', dCity:'Drammen', qty:8, kg:1500, vol:8.2, km:45, time:'50m', zc:'#ede9fe' },
+    { oid:10504, assigned:'check', vehicle:'fa-van-shuttle', service:'fa-clock', type:'PD', pAfter:'09:15', dBefore:'11:00', ref:'REF-4824', customer:'Nordic Logistics AS', aq:2, pZone:'Oslo Ø', pName:'Grünerløkka', pZip:'0555', pCity:'Oslo', dZone:'Akershus', dName:'Sandvika Center', dZip:'1337', dCity:'Sandvika', qty:2, kg:120, vol:0.8, km:18, time:'30m', zc:'#dbeafe' },
+    { oid:10505, assigned:null, vehicle:'fa-truck', service:'fa-clock', type:'P', pAfter:'10:00', dBefore:'16:00', ref:'REF-4825', customer:'Bergen Shipping AS', aq:4, pZone:'Trondheim', pName:'Brattøra Port', pZip:'7010', pCity:'Trondheim', dZone:'Trondheim', dName:'Heimdal Depot', dZip:'7080', dCity:'Heimdal', qty:20, kg:8400, vol:42.0, km:15, time:'20m', zc:'#d1fae5' },
+    { oid:10506, assigned:null, vehicle:'fa-van-shuttle', service:'fa-bolt', type:'PD', pAfter:'08:30', dBefore:'11:30', ref:'REF-4826', customer:'Scandinavian Transport', aq:2, pZone:'Oslo N', pName:'Nydalen Office', pZip:'0484', pCity:'Oslo', dZone:'Oslo S', dName:'Bjørvika Tower', dZip:'0150', dCity:'Oslo', qty:1, kg:45, vol:0.3, km:8, time:'18m', zc:'#fce7f3' },
+    { oid:10507, assigned:null, vehicle:'fa-truck-moving', service:'fa-clock', type:'PD', pAfter:'06:00', dBefore:'18:00', ref:'REF-4827', customer:'Oslo Freight Co.', aq:6, pZone:'Kristiansand', pName:'Sørlandsparken', pZip:'4636', pCity:'Kristiansand', dZone:'Oslo', dName:'Alnabru Terminal', dZip:'0614', dCity:'Oslo', qty:24, kg:12000, vol:65.0, km:320, time:'4h 30m', zc:'#ffedd5' },
+    { oid:10508, assigned:null, vehicle:'fa-van-shuttle', service:'fa-bolt', type:'D', pAfter:'11:00', dBefore:'13:00', ref:'REF-4828', customer:'Nordic Logistics AS', aq:1, pZone:'Akershus', pName:'Lørenskog Dist.', pZip:'1473', pCity:'Lørenskog', dZone:'Oslo Ø', dName:'Tøyen', dZip:'0577', dCity:'Oslo', qty:3, kg:200, vol:1.5, km:14, time:'22m', zc:'#dbeafe' },
+    { oid:10509, assigned:null, vehicle:'fa-truck', service:'fa-clock', type:'PD', pAfter:'07:00', dBefore:'15:00', ref:'REF-4829', customer:'Bergen Shipping AS', aq:3, pZone:'Tromsø', pName:'Tromsø Havn', pZip:'9008', pCity:'Tromsø', dZone:'Bodø', dName:'Bodø Terminal', dZip:'8006', dCity:'Bodø', qty:15, kg:6200, vol:34.0, km:595, time:'8h 10m', zc:'#e0e7ff' },
+    { oid:10510, assigned:null, vehicle:'fa-van-shuttle', service:'fa-clock', type:'PD', pAfter:'09:30', dBefore:'12:30', ref:'REF-4830', customer:'Scandinavian Transport', aq:2, pZone:'Oslo V', pName:'Skøyen', pZip:'0276', pCity:'Oslo', dZone:'Asker', dName:'Asker Sentrum', dZip:'1384', dCity:'Asker', qty:5, kg:320, vol:2.8, km:22, time:'35m', zc:'#fef3c7' },
 ];
 
-// ── Render Driver Nav ──
+// ══════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════
 function renderDriverNav() {
-    const nav = document.getElementById('driverNav');
-    nav.innerHTML = drivers.map((d, i) => `
-        <div class="driver-chip ${i === 0 ? 'active' : ''}" style="background:${d.color};" onclick="selectDriver(${d.id})" title="${d.name}">
-            ${d.initials}
-            <span class="status-dot status-${d.status}"></span>
-        </div>
-    `).join('');
+    document.getElementById('driverNav').innerHTML = drivers.map((d,i) => `
+        <div class="driver-chip ${i===0?'active':''}" style="background:${d.color};" onclick="selectDriver(${d.id},this)" title="${d.name}">
+            ${d.initials}<span class="status-dot status-${d.status}"></span>
+        </div>`).join('');
 }
-
-function selectDriver(id) {
-    document.querySelectorAll('.driver-chip').forEach(c => c.classList.remove('active'));
-    const d = drivers.find(d => d.id === id);
-    event.currentTarget.classList.add('active');
-    document.getElementById('resAvatar').innerHTML = d.initials + `<span class="status-dot status-${d.status}"></span>`;
+function selectDriver(id,el) {
+    document.querySelectorAll('.driver-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    const d = drivers.find(x=>x.id===id);
+    document.getElementById('resAvatar').innerHTML = d.initials+`<span class="status-dot status-${d.status}"></span>`;
     document.getElementById('resAvatar').style.background = d.color;
     document.getElementById('resName').textContent = d.name;
 }
-
-// ── Render Resource Orders ──
 function renderResourceOrders() {
-    const container = document.getElementById('resourceOrders');
-    container.innerHTML = resourceOrders.map(o => `
+    document.getElementById('resourceOrders').innerHTML = resourceOrders.map(o => `
         <div class="res-order-card">
             <div class="oid">#${o.oid}</div>
             <div class="addr"><i class="fas fa-arrow-up" style="color:#1e40af;"></i> ${o.from}</div>
@@ -674,107 +817,252 @@ function renderResourceOrders() {
                 <span class="time-badge pickup"><i class="fas fa-clock"></i> P: ${o.pAfter}</span>
                 <span class="time-badge deliver"><i class="fas fa-flag-checkered"></i> D: ${o.dBefore}</span>
             </div>
-        </div>
-    `).join('');
+        </div>`).join('');
 }
-
-// ── Render Order Table ──
 function renderOrderTable() {
-    const tbody = document.getElementById('orderTableBody');
-    tbody.innerHTML = orders.map(o => `
+    document.getElementById('orderTableBody').innerHTML = orders.map(o => `
         <tr>
             <td><input type="checkbox"></td>
             <td><a class="oid-link" href="#">${o.oid}</a></td>
-            <td class="icon-cell">${o.assigned ? '<i class="fas fa-check-circle" style="color:#10b759;"></i>' : '<i class="far fa-circle" style="color:#d1d5db;"></i>'}</td>
+            <td class="icon-cell">${o.assigned?'<i class="fas fa-check-circle" style="color:#10b759;"></i>':'<i class="far fa-circle" style="color:#d1d5db;"></i>'}</td>
             <td class="icon-cell"><i class="fas ${o.vehicle}" style="color:#6366f1;"></i></td>
             <td class="icon-cell"><i class="fas ${o.service}" style="color:#f59e0b;"></i></td>
             <td><span class="type-badge type-${o.type}">${o.type}</span></td>
-            <td>${o.pAfter}</td>
-            <td>${o.dBefore}</td>
-            <td style="color:#64748b;">${o.ref}</td>
-            <td>${o.customer}</td>
-            <td style="text-align:center;">${o.aq}</td>
-            <td><span class="zone-badge" style="background:${o.zoneColor};">${o.pZone}</span></td>
-            <td class="addr-cell">${o.pName}</td>
-            <td>${o.pZip}</td>
-            <td>${o.pCity}</td>
-            <td><span class="zone-badge" style="background:${o.zoneColor};">${o.dZone}</span></td>
-            <td class="addr-cell">${o.dName}</td>
-            <td>${o.dZip}</td>
-            <td>${o.dCity}</td>
-            <td style="text-align:right;">${o.qty}</td>
-            <td style="text-align:right;">${o.kg.toLocaleString()}</td>
-            <td style="text-align:right;">${o.vol}</td>
-            <td style="text-align:right;">${o.km}</td>
-            <td>${o.time}</td>
-        </tr>
-    `).join('');
+            <td>${o.pAfter}</td><td>${o.dBefore}</td>
+            <td style="color:#64748b;">${o.ref}</td><td>${o.customer}</td><td style="text-align:center;">${o.aq}</td>
+            <td><span class="zone-badge" style="background:${o.zc};">${o.pZone}</span></td>
+            <td class="addr-cell">${o.pName}</td><td>${o.pZip}</td><td>${o.pCity}</td>
+            <td><span class="zone-badge" style="background:${o.zc};">${o.dZone}</span></td>
+            <td class="addr-cell">${o.dName}</td><td>${o.dZip}</td><td>${o.dCity}</td>
+            <td style="text-align:right;">${o.qty}</td><td style="text-align:right;">${o.kg.toLocaleString()}</td>
+            <td style="text-align:right;">${o.vol}</td><td style="text-align:right;">${o.km}</td><td>${o.time}</td>
+        </tr>`).join('');
 }
 
-// ── Map ──
+// ══════════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════════
 let mainMap, modalMap;
 function initMainMap() {
-    mainMap = L.map('map').setView([59.91, 10.75], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(mainMap);
-
-    // Driver markers
-    const driverPositions = [
-        [59.912, 10.734], [59.927, 10.758], [59.895, 10.775],
-        [59.940, 10.712], [59.905, 10.690], [59.918, 10.810],
-    ];
-    driverPositions.forEach((pos, i) => {
-        const d = drivers[i];
-        if (!d) return;
-        L.circleMarker(pos, { radius: 8, fillColor: d.color, color: '#fff', weight: 2, fillOpacity: 1 })
-            .addTo(mainMap)
-            .bindPopup(`<b>${d.name}</b><br>${d.status}`);
+    mainMap = L.map('map').setView([59.91,10.75],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(mainMap);
+    [[59.912,10.734],[59.927,10.758],[59.895,10.775],[59.940,10.712],[59.905,10.690],[59.918,10.810]].forEach((pos,i)=>{
+        if(!drivers[i])return;
+        L.circleMarker(pos,{radius:8,fillColor:drivers[i].color,color:'#fff',weight:2,fillOpacity:1}).addTo(mainMap).bindPopup(`<b>${drivers[i].name}</b><br>${drivers[i].status}`);
     });
-
-    // Order markers
-    const orderPositions = [
-        [59.912, 10.720], [59.935, 10.695], [59.928, 10.780],
-        [59.900, 10.745], [59.945, 10.760], [59.890, 10.710],
-        [59.908, 10.800], [59.920, 10.670],
-    ];
-    orderPositions.forEach((pos, i) => {
-        L.marker(pos).addTo(mainMap).bindPopup(`Order #${10501 + i}`);
+    [[59.912,10.720],[59.935,10.695],[59.928,10.780],[59.900,10.745],[59.945,10.760],[59.890,10.710],[59.908,10.800],[59.920,10.670]].forEach((pos,i)=>{
+        L.marker(pos).addTo(mainMap).bindPopup(`Order #${10501+i}`);
     });
 }
-
 function initModalMap() {
-    modalMap = L.map('modal-map').setView([59.91, 10.75], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(modalMap);
+    modalMap = L.map('modal-map').setView([59.91,10.75],12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(modalMap);
 }
 
-// ── Off-canvas ──
+// ══════════════════════════════════════════════════
+//  OFF-CANVAS & ACCORDION
+// ══════════════════════════════════════════════════
+let currentStep = 1;
+const completedSteps = new Set();
+
 function openAddOrder() {
     document.getElementById('offcanvasOverlay').classList.add('show');
     document.getElementById('offcanvasPanel').classList.add('show');
-    setTimeout(() => {
-        if (!modalMap) {
-            initModalMap();
-        } else {
-            modalMap.invalidateSize();
-        }
-    }, 350);
+    document.getElementById('offcanvasMapSide').style.display = 'block';
+    setTimeout(()=>{ if(!modalMap) initModalMap(); else modalMap.invalidateSize(); },350);
 }
-
 function closeAddOrder() {
     document.getElementById('offcanvasOverlay').classList.remove('show');
     document.getElementById('offcanvasPanel').classList.remove('show');
 }
 
-// ── Search Panel ──
-function toggleSearch() {
-    document.getElementById('searchPanel').classList.toggle('show');
+function toggleStep(n) {
+    const header = document.getElementById('stepHeader'+n) || document.querySelector(`#step${n} .step-header`);
+    if (header && header.classList.contains('disabled')) return;
+    // close all
+    for (let i=1;i<=5;i++) {
+        const h = document.querySelector(`#step${i} .step-header`);
+        const b = document.getElementById('stepBody'+i);
+        if(h) h.classList.remove('open');
+        if(b) b.classList.remove('open'); if(b) b.style.display='none';
+    }
+    // open target
+    const th = document.querySelector(`#step${n} .step-header`);
+    const tb = document.getElementById('stepBody'+n);
+    th.classList.add('open'); tb.classList.add('open'); tb.style.display='block';
+    currentStep = n;
 }
 
-// ── Init ──
-document.addEventListener('DOMContentLoaded', () => {
+function completeStep(n) {
+    completedSteps.add(n);
+    const num = document.getElementById('stepNum'+n);
+    num.classList.remove('active'); num.classList.add('completed');
+    num.innerHTML = '<i class="fas fa-check" style="font-size:11px;"></i>';
+
+    // enable next
+    const next = n+1;
+    if (next <= 5) {
+        const nh = document.getElementById('stepHeader'+next);
+        if(nh) nh.classList.remove('disabled');
+        const nn = document.getElementById('stepNum'+next);
+        if(nn) nn.classList.add('active');
+        toggleStep(next);
+    }
+
+    // summaries
+    if(n===1) document.getElementById('stepSummary1').textContent = '— Nordic Logistics AS';
+    if(n===2) document.getElementById('stepSummary2').textContent = '— 2 waypoints';
+    if(n===3) document.getElementById('stepSummary3').textContent = '— 4x EUR Pallet, 280 kg';
+    if(n===4) document.getElementById('stepSummary4').textContent = '— 19.05 08:00 → 19.05 16:00';
+}
+
+function selectOrderType(el) {
+    document.querySelectorAll('.order-type-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function toggleSearch() { document.getElementById('searchPanel').classList.toggle('show'); }
+
+// Show customer details when typing
+document.addEventListener('DOMContentLoaded', ()=>{
+    const ci = document.getElementById('customerNameInput');
+    if(ci) ci.addEventListener('input', function() {
+        if(this.value.length > 2) {
+            document.getElementById('customerContactRow').style.display='flex';
+            document.getElementById('customerDetailsSection').style.display='block';
+            document.getElementById('customerAddress').value='Karl Johans gate 22';
+            document.getElementById('customerZip').value='0026';
+            document.getElementById('customerCity').value='Oslo';
+        }
+    });
+    // Show goods detail fields when selecting type
+    const gs = document.getElementById('goodsTypeField');
+    if(gs) gs.querySelector('select').addEventListener('change', function() {
+        if(this.value) document.getElementById('goodsDetailFields').style.display='block';
+    });
+});
+
+// ══════════════════════════════════════════════════
+//  INTRO.JS TOURS
+// ══════════════════════════════════════════════════
+function startTour(name) {
+    document.getElementById('tourMenu').classList.remove('show');
+    const tours = { overview: tourOverview, createOrder: tourCreateOrder, resources: tourResources, search: tourSearch };
+    if (tours[name]) tours[name]();
+}
+
+function tourOverview() {
+    introJs().setOptions({
+        steps: [
+            { title:'Welcome to Dispatch', intro:'This is the main dispatch dashboard where dispatchers manage orders, assign drivers, and track deliveries in real-time. Let\'s explore the key areas.' },
+            { element:'#topbar', title:'Navigation Bar', intro:'The top bar gives you access to all TMS modules: Dispatch, Orders, Resources, Reports, and Settings. The green <b>Create new order</b> button is always accessible from here.' },
+            { element:'#driverNav', title:'Driver Nav', intro:'Quick-access driver chips. Each circle shows the driver\'s initials and a <b>status dot</b>: green = available, yellow = busy, red = offline. Click to select a driver and see their details.' },
+            { element:'#resourceSidebar', title:'Resource Sidebar', intro:'Shows the selected driver\'s profile, vehicle capacity (loaded vs. waiting goods), and tabs for <b>Orders</b>, <b>Status</b>, <b>Routes</b>, <b>Messages</b>, <b>Info</b>, and <b>Time</b>. Drag orders here to assign them.' },
+            { element:'#orderTabsBar', title:'Order Tabs', intro:'Custom filtered views of orders. The default tab shows all unassigned orders. You can create custom tabs (e.g., "Oslo Express") with saved filter criteria. Switch between <b>List</b>, <b>Vehicle Calendar</b>, <b>Resource Calendar</b>, and <b>Terminal</b> views.' },
+            { element:'#orderTableContainer', title:'Order Table', intro:'The main order list with 24+ configurable columns. Each row is draggable — drag onto a driver to assign. Columns: OID, assignment status (A), vehicle type (V), service type (S), order type (T), pickup/delivery times, addresses, goods, distance, and time.' },
+            { element:'#orderFooter', title:'Bulk Actions', intro:'Select multiple orders for batch actions: <b>Assign to route</b>, <b>Withdraw</b>, <b>Geocode addresses</b>, or <b>Merge orders</b>. Pagination controls are on the right.' },
+            { element:'#mapSidebar', title:'Live Map', intro:'Interactive Leaflet map showing driver positions (colored dots) and order locations (markers). Supports layer toggles for vehicles, resources, cameras, and messages.' },
+        ],
+        showProgress: true,
+        showBullets: false,
+    }).start();
+}
+
+function tourCreateOrder() {
+    // First ensure the modal is closed, then open it at step 2
+    closeAddOrder();
+    // Reset accordion to step 1
+    resetAccordion();
+
+    introJs().setOptions({
+        steps: [
+            { title:'Create Order: Full Flow', intro:'This tour walks you through creating a new order from start to finish, following the 5-step accordion workflow used in the real TMS.' },
+            { element:'#btnCreateOrder', title:'Step 0: Open the Form', intro:'Click the green <b>Create new order</b> button to open the off-canvas panel. The form slides in from the right with a map sidebar.' },
+            { element:'#offcanvasHeader', title:'Order Form Header', intro:'The off-canvas panel header. The form uses a <b>5-step accordion</b> pattern — each step must be completed before the next one unlocks. A map panel on the right shows geocoded addresses in real-time.', position:'left' },
+            { element:'#step1', title:'Step 1: Customer', intro:'Search and select the customer. As you type, an autocomplete suggests matching companies. Once selected, the <b>contact dropdown</b>, <b>visit address</b>, and <b>note field</b> appear. You can also configure confirm email and project. Click <b>Next</b> to proceed.', position:'left' },
+            { element:'#step2', title:'Step 2: Tasks (Waypoints)', intro:'First, choose the <b>order type</b>: Transport, Service, or Favorite. Then define waypoints on a vertical timeline. Each waypoint has a <b>type toggle</b> (Pick-up / Drop-off / Assignment), full address fields, contact, phone, instructions, POD requirement, and planned duration. Use <b>+ New waypoint</b> to add more stops.', position:'left' },
+            { element:'#step3', title:'Step 3: Goods / Description', intro:'Select a <b>goods type</b> (EUR Pallet, Package, etc.) and quantity. Detail fields appear for weight, volume, dimensions, loadmeters, and pallet places. Added goods show in a summary table. A free-text <b>description field</b> is always available.', position:'left' },
+            { element:'#step4', title:'Step 4: Time', intro:'Set <b>Pickup after</b> (date + time) and <b>Deliver before</b> (date + time). For recurring orders, a month/day pattern selector appears here.', position:'left' },
+            { element:'#step5', title:'Step 5: Product & Pricing', intro:'Select <b>service type</b> and <b>vehicle group</b>. The pricing table shows auto-calculated lines with code, qty, name, price, discount, subtotal, resource base/sum/%, and tax. Set the <b>invoice reference</b>, toggle "Own Invoice" and "Ready to invoice". Finally, select a <b>resource (driver)</b> and click <b>Add Order</b>.', position:'left' },
+        ],
+        showProgress: true,
+        showBullets: false,
+        dontShowAgain: false,
+    }).onbeforechange(function(targetEl) {
+        const stepIndex = this._currentStep;
+        if (stepIndex === 2) {
+            openAddOrder();
+        }
+        if (stepIndex === 3) {
+            // open step 1
+            toggleStep(1);
+        }
+        if (stepIndex === 4) {
+            completeStep(1);
+        }
+        if (stepIndex === 5) {
+            completeStep(2);
+        }
+        if (stepIndex === 6) {
+            completeStep(3);
+        }
+        if (stepIndex === 7) {
+            completeStep(4);
+        }
+    }).onexit(function() {
+    }).start();
+}
+
+function tourResources() {
+    introJs().setOptions({
+        steps: [
+            { title:'Resource Management', intro:'Learn how to manage drivers and their assignments in the dispatch view.' },
+            { element:'#driverNav', title:'Driver Quick Nav', intro:'The vertical strip shows all available drivers as colored chips. The <b>status dot</b> shows availability at a glance. Drivers are filterable by group, type, and status using the filter button above.' },
+            { element:'#resourceHeader', title:'Driver Profile', intro:'Shows the selected driver\'s name, phone, communication method (App/SMS), and assigned vehicle with capacity details. The <b>Not loaded / Loaded</b> rows show real-time goods weight, volume, and pallet utilization.' },
+            { element:'#resourceTabs', title:'Driver Tabs', intro:'<b>Orders</b>: assigned order list. <b>Status</b>: current location and stop status. <b>Routes</b>: optimized route view. <b>Msg</b>: chat with driver. <b>Info</b>: driver details. <b>Time</b>: timesheet for the day.' },
+            { element:'#resourceOrders', title:'Assigned Orders', intro:'Cards showing each assigned order with pickup/delivery addresses and time windows. Orders can be reordered by dragging, or withdrawn using bulk actions in the footer.', position:'right' },
+        ],
+        showProgress: true,
+        showBullets: false,
+    }).start();
+}
+
+function tourSearch() {
+    // Open search panel first
+    document.getElementById('searchPanel').classList.add('show');
+    setTimeout(()=>{
+        introJs().setOptions({
+            steps: [
+                { title:'Search & Filter Orders', intro:'The dispatch search panel lets you narrow down the order list with multiple criteria.' },
+                { element:'#searchPanel', title:'Filter Panel', intro:'Filter by <b>Order ID</b>, <b>Reference</b>, <b>Customer</b>, and assignment status. Expandable sections for <b>Address</b> details (name, zip, city, country), <b>Vehicle types</b>, and <b>Service types</b>. Display options control visibility of parked, finished, and invoiced orders. Sort by any column ascending or descending.' },
+                { element:'#orderTabsBar', title:'Custom Views', intro:'Save your filter configurations as named tabs. Each tab remembers its search criteria so dispatchers can quickly switch between different order views (e.g., "Oslo Express" for urgent Oslo orders).' },
+                { element:'#viewToggles', title:'View Modes', intro:'Switch between: <b>List</b> (default table), <b>Vehicle Calendar</b> (timeline per vehicle/asset), <b>Resource Calendar</b> (timeline per driver), and <b>Terminal</b> (incoming/on-location/outgoing flow).' },
+            ],
+            showProgress: true,
+            showBullets: false,
+        }).onexit(()=>{ document.getElementById('searchPanel').classList.remove('show'); }).start();
+    }, 300);
+}
+
+function resetAccordion() {
+    completedSteps.clear();
+    currentStep = 1;
+    for (let i=1;i<=5;i++) {
+        const num = document.getElementById('stepNum'+i);
+        num.classList.remove('completed','active');
+        num.innerHTML = i;
+        document.getElementById('stepSummary'+i).textContent = '';
+        const h = document.querySelector(`#step${i} .step-header`);
+        const b = document.getElementById('stepBody'+i);
+        if(i===1) { h.classList.remove('disabled'); h.classList.add('open'); num.classList.add('active'); b.style.display='block'; b.classList.add('open'); }
+        else { h.classList.add('disabled'); h.classList.remove('open'); b.style.display='none'; b.classList.remove('open'); }
+    }
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
     renderDriverNav();
     renderResourceOrders();
     renderOrderTable();
