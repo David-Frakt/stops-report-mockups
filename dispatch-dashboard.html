@@ -248,6 +248,37 @@
         .introjs-tooltiptext { font-size: 13px; line-height: 1.5; }
         .introjs-button { font-size: 12px; font-weight: 500; text-shadow: none; }
         .introjs-skipbutton { font-size: 12px; }
+
+        /* ── Accent pulse ring ── */
+        @keyframes accentPulse {
+            0%   { box-shadow: 0 0 0 0 var(--accent-color, rgba(239,68,68,.6)); }
+            70%  { box-shadow: 0 0 0 10px transparent; }
+            100% { box-shadow: 0 0 0 0 transparent; }
+        }
+        .accent-ring {
+            animation: accentPulse 1.2s ease-out infinite;
+            border-radius: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .accent-ring-warning { --accent-color: rgba(245,158,11,.55); border-color: #f59e0b !important; }
+        .accent-ring-error   { --accent-color: rgba(239,68,68,.55);  border-color: #ef4444 !important; }
+        .accent-ring-info    { --accent-color: rgba(1,104,250,.45);  border-color: #0168fa !important; }
+
+        /* Accent tooltip styling — tighter, colored header strip */
+        .introjs-tooltip.accent-tooltip { max-width: 300px; }
+        .accent-tooltip .introjs-tooltip-header { padding: 8px 14px; border-radius: 5px 5px 0 0; margin: -10px -15px 8px; }
+        .accent-tooltip .introjs-tooltip-header.accent-hdr-warning { background: #fef3c7; }
+        .accent-tooltip .introjs-tooltip-header.accent-hdr-error   { background: #fee2e2; }
+        .accent-tooltip .introjs-tooltip-header.accent-hdr-info    { background: #dbeafe; }
+        .accent-tooltip .introjs-tooltiptext { font-size: 12px; }
+
+        /* Tour menu — accent section */
+        .tour-menu-divider { height: 1px; background: #e2e8f0; margin: 6px 0; }
+        .tour-menu a .accent-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .accent-dot-error { background: #ef4444; }
+        .accent-dot-warning { background: #f59e0b; }
+        .accent-dot-info { background: #0168fa; }
     </style>
 </head>
 <body>
@@ -744,6 +775,12 @@
         <a href="#" onclick="startTour('createOrder'); return false;"><i class="fas fa-plus-circle"></i> Create Order (Full Flow)</a>
         <a href="#" onclick="startTour('resources'); return false;"><i class="fas fa-user-cog"></i> Resource Management</a>
         <a href="#" onclick="startTour('search'); return false;"><i class="fas fa-search"></i> Search &amp; Filters</a>
+        <div class="tour-menu-divider"></div>
+        <div class="tour-menu-header">Accent Alerts</div>
+        <a href="#" onclick="startTour('accentCustomer'); return false;"><span class="accent-dot accent-dot-error"></span> Missing customer name</a>
+        <a href="#" onclick="startTour('accentDeliverTime'); return false;"><span class="accent-dot accent-dot-warning"></span> Deliver time not set</a>
+        <a href="#" onclick="startTour('accentGoodsType'); return false;"><span class="accent-dot accent-dot-warning"></span> Goods type required</a>
+        <a href="#" onclick="startTour('accentInvoiceRef'); return false;"><span class="accent-dot accent-dot-info"></span> Invoice ref reminder</a>
     </div>
     <button class="tour-toggle" id="tourToggle" onclick="document.getElementById('tourMenu').classList.toggle('show')" title="Guided Tours">
         <i class="fas fa-question"></i>
@@ -947,8 +984,126 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ══════════════════════════════════════════════════
 function startTour(name) {
     document.getElementById('tourMenu').classList.remove('show');
-    const tours = { overview: tourOverview, createOrder: tourCreateOrder, resources: tourResources, search: tourSearch };
+    const tours = {
+        overview: tourOverview, createOrder: tourCreateOrder,
+        resources: tourResources, search: tourSearch,
+        accentCustomer: () => accentField({
+            selector: '#customerNameInput',
+            title: '<i class="fas fa-exclamation-triangle" style="color:#ef4444;margin-right:4px;"></i> Customer is required',
+            message: 'This order cannot be saved without selecting a <b>customer</b>. Start typing a company name and select from the dropdown.',
+            severity: 'error',
+            prepare: () => { openAddOrder(); setTimeout(()=> toggleStep(1), 400); },
+            prepareDelay: 600,
+        }),
+        accentDeliverTime: () => accentField({
+            selector: '#deliverTime',
+            title: '<i class="fas fa-clock" style="color:#f59e0b;margin-right:4px;"></i> Deliver time is empty',
+            message: 'The <b>deliver before</b> time has not been set. Without a deadline, the order will not appear correctly in the dispatch timeline.',
+            severity: 'warning',
+            prepare: () => {
+                openAddOrder();
+                setTimeout(()=>{
+                    // unlock steps up to 4
+                    for(let i=1;i<=3;i++) completeStep(i);
+                    setTimeout(()=> toggleStep(4), 100);
+                }, 400);
+            },
+            prepareDelay: 800,
+        }),
+        accentGoodsType: () => accentField({
+            selector: '#goodsTypeField select',
+            title: '<i class="fas fa-exclamation-triangle" style="color:#f59e0b;margin-right:4px;"></i> Goods type not selected',
+            message: 'Please select a <b>goods type</b> before proceeding. This determines default weight/volume calculations and pricing rules.',
+            severity: 'warning',
+            prepare: () => {
+                openAddOrder();
+                setTimeout(()=>{
+                    for(let i=1;i<=2;i++) completeStep(i);
+                    setTimeout(()=> toggleStep(3), 100);
+                }, 400);
+            },
+            prepareDelay: 800,
+        }),
+        accentInvoiceRef: () => accentField({
+            selector: '#invoiceRefRow',
+            title: '<i class="fas fa-info-circle" style="color:#0168fa;margin-right:4px;"></i> Invoice reference recommended',
+            message: 'This customer has <b>"Require invoice ref"</b> enabled in their settings. Adding a reference now avoids delays when invoicing later.',
+            severity: 'info',
+            prepare: () => {
+                openAddOrder();
+                setTimeout(()=>{
+                    for(let i=1;i<=4;i++) completeStep(i);
+                    setTimeout(()=> toggleStep(5), 100);
+                }, 400);
+            },
+            prepareDelay: 900,
+        }),
+    };
     if (tours[name]) tours[name]();
+}
+
+// ══════════════════════════════════════════════════
+//  ACCENT — single-step highlight for a specific field
+// ══════════════════════════════════════════════════
+function accentField({ selector, title, message, severity = 'error', prepare, prepareDelay = 0 }) {
+    const run = () => {
+        const el = document.querySelector(selector);
+        if (!el) return;
+
+        // Add pulsing ring
+        el.classList.add('accent-ring', `accent-ring-${severity}`);
+
+        // Scroll the field into view inside the offcanvas body
+        const scrollParent = el.closest('.offcanvas-body') || el.closest('.step-body');
+        if (scrollParent) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const intro = introJs();
+        intro.setOptions({
+            steps: [{
+                element: selector,
+                title: title,
+                intro: message,
+                position: 'right',
+            }],
+            showProgress: false,
+            showBullets: false,
+            showStepNumbers: false,
+            exitOnOverlayClick: true,
+            doneLabel: 'Got it',
+            tooltipClass: `accent-tooltip`,
+        });
+
+        intro.onafterchange(function() {
+            // Color the header strip
+            const hdr = document.querySelector('.introjs-tooltip-header');
+            if (hdr) {
+                hdr.classList.add(`accent-hdr-${severity}`);
+            }
+        });
+
+        intro.onexit(function() {
+            el.classList.remove('accent-ring', `accent-ring-${severity}`);
+        });
+
+        intro.oncomplete(function() {
+            el.classList.remove('accent-ring', `accent-ring-${severity}`);
+            // Focus the field so the user can immediately act
+            if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+                el.focus();
+            }
+        });
+
+        intro.start();
+    };
+
+    if (prepare) {
+        prepare();
+        setTimeout(run, prepareDelay);
+    } else {
+        run();
+    }
 }
 
 function tourOverview() {
